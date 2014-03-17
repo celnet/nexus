@@ -1,0 +1,32 @@
+1. 	ADD Object	Balance (Master-detail to Opportunity)
+		ADD Field	Date
+		ADD Field	Opp_Amount
+		ADD Field	DN_Monthly_Amount
+		ADD Field	DN_Sum_Amount
+		ADD Field	Balance (Formula Opp_Amount - DN_Sum_Amount)
+		ADD Field	OppId_Month (External Id, Unique)
+		
+2. 	获取需要计算的业务机会 (哪些业务机会需要计算 (Opp.Stage = Approved OR Opp.Stage = Close Won) AND (Project_End_Date >= 当前月份))
+	生成Balance数据 (哪些DN需要计算入Balance (Close_Date to Project_End_Date))
+	
+	业务机会 Amount, Close_Date, Project_End_Date, Id
+	DB_Notes Amount, Date, Opportunity
+	
+	对每一个业务机会
+		对每一个月份 (当前时间的月份-Close_Date所在月份+1)
+			把这个月份的最后一天赋值给Balance的Date
+			把业务机会的Amount赋值给Balance的Opp_Amount
+			对该月份的DN的Amount, 加起来赋值给Balance的DN_Monthly_Amount
+			对从Close_Date到当前月份的DN的Amount, 加起来赋值给Balance的DN_Sum_Amount
+			把业务机会的Id和这个月份赋值给Balance的OppId_Month
+			把业务机会的Id赋值给Balance的Opportunity__c
+	
+			
+	
+	什么时候生成Balance数据
+	
+	Balance.Date = 某个月的最后一天
+	Balance.Opp_Amount = Opportunity.Amount
+	Balance.DN_Monthly_Amount = SUM(某个月DN和)
+	Balance.DN_Sum_Amount = SUM (业务机会迄今DN的和)
+	Balance.OppId_Month = OppId + Year + Month;
