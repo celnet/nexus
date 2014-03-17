@@ -1,0 +1,1025 @@
+<apex:page standardController="Cities__c" extensions="Ctrl_InsurancePolicyPage" sidebar="false" showHeader="false">
+	<style>
+		.table {
+			border:1px solid #e4e4e4;
+			width:100%;
+			border-collapse:collapse;
+		}
+		
+		.tabletitle1, .tabletitle2, .tabletitle3, .tabletitle4 {
+			background-color:#0099CC;
+			border:1px solid #0099CC;
+		}
+		
+		.tabletitlename, .tabletitlespace {
+			padding:5px;
+			font-size:1.3em;
+			text-align:center;
+			color:white;
+		}
+		
+		.tabletitlebutton {
+			padding:5px;
+			font-size:1.3em;
+		}
+		
+		.tableheader1 {
+			border:1px solid #e4e4e4;
+			border-top:1px solid #96DCF2;
+		}
+		
+		.tableheader2, .tableheader3, .tableheader4 {
+			border:1px solid #e4e4e4;
+		}
+		
+		.tableheader1 th, .tableheader2 th, .tableheader3 th, .tableheader4 th {
+			border-bottom:1px solid #e4e4e4;
+			border-right:1px solid #e4e4e4;
+			border-left:1px solid #e4e4e4;
+			font-size:1.2em;
+			padding:5px;
+			text-align:center;
+		}
+		
+		.dataheader {
+			background-color:#ececec;
+		}
+		
+		.dataheader td {
+			border:1px solid #e4e4e4;
+			padding:5px;
+		}
+		
+		.data {
+			background-color:white;
+		}
+		
+		.data td {
+			border:1px solid #e4e4e4;
+			padding:5px;
+		}
+		
+	</style>
+	<apex:form id="pb3x">
+		<table class="table">
+			<tr class="tabletitle2">
+				<th colspan="1" class="tabletitlebutton">
+					<apex:commandButton action="{!Saveit3}" value="保存" reRender="pb3x" rendered="{!isEditing3}"/>
+					<apex:commandButton action="{!Editit3}" value="编辑" reRender="pb3x" rendered="{!isNotEditing3}"/>	
+					<apex:commandButton action="{!CancelEdit3}" value="取消" reRender="pb3x" rendered="{!isEditing3}"/>
+				</th>
+				<th colspan="7" class="tabletitlename" >
+					城镇职工医疗保险政策
+				</th>
+				<th colspan="2" class="tabletitlespace" >
+				</th>
+			</tr>
+			<tr class="tableheader2">
+				<th colspan="5" >腹膜透析</th>
+				<th colspan="5" >血膜透析</th>
+			</tr>
+			<tr class="dataheader">
+				<td>门诊透析付费方式</td>
+				<td>医保归类</td>
+				<td>先行自付比例</td>
+				<td>起付线</td>
+				<td>最高限/定额</td>
+				<td>门诊透析付费方式</td>
+				<td>医保归类</td>
+				<td>先行自付比例</td>
+				<td>起付线</td>
+				<td>最高限/定额</td>
+				
+				<!--  
+				<td >按病种付费是否包含辅助用药</td>
+				<td >患者自付比例</td>
+				<td >起付线</td>
+				<td >医保归类</td>
+				<td >最高限/定额</td>
+				<td >按病种付费是否包含辅助用药</td>
+				<td >患者自付比例</td>
+				<td >起付线</td>
+				<td >医保归类</td>
+				<td >最高限/定额</td>
+				-->
+			</tr>
+			<tr class="data" >
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_DialysisPayment__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_DialysisPayment__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_HealthInsuranceType__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_HealthInsuranceType__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_FirstPayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_FirstPayScale__c}" rendered="{!isEditing3}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_StartToPay__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_StartToPay__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_MaximumLimit__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_MaximumLimit__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_DialysisPayment__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_DialysisPayment__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_HealthInsuranceType__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_HealthInsuranceType__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_FirstPayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_FirstPayScale__c}" rendered="{!isEditing3}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_StartToPay__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_StartToPay__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_MaximumLimit__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_MaximumLimit__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				
+				<!-- 
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_PatientPayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_PatientPayScale__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_StartToPay__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_StartToPay__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_HealthInsuranceType__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_HealthInsuranceType__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_MaximumLimit__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_MaximumLimit__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_PatientPayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_PatientPayScale__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_StartToPay__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_StartToPay__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_HealthInsuranceType__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_HealthInsuranceType__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_MaximumLimit__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_MaximumLimit__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				 -->
+			</tr>
+			<tr class="dataheader">
+				<td>医保支付比例</td>
+				<td>患者自付比例</td>
+				<td>按病种付费是否包含辅助用药</td>
+				<td>政策环境评估</td>
+				<td>重要支付瓶颈</td>
+				<td>医保支付比例</td>
+				<td>患者自付比例</td>
+				<td>按病种付费是否包含辅助用药</td>
+				<td>政策环境评估</td>
+				<td>重要支付瓶颈</td>
+				
+				<!-- 
+				<td >门诊透析付费方式</td>
+				<td >先行自付比例</td>
+				<td >医保支付比例</td>
+				<td >政策环境评估</td>
+				<td >重要支付瓶颈</td>
+				<td >门诊透析付费方式</td>
+				<td >先行自付比例</td>
+				<td >医保支付比例</td>
+				<td >政策环境评估</td>
+				<td >重要支付瓶颈</td>
+				 -->
+			</tr>
+			<tr class="data" >
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_PatientPayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_PatientPayScale__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_PolicyTendency__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_PolicyTendency__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_PayObstacle__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_PayObstacle__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_PatientPayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_PatientPayScale__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_PolicyTendency__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_PolicyTendency__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_PayObstacle__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_PayObstacle__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				
+				<!-- 
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_DialysisPayment__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_DialysisPayment__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_FirstPayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_FirstPayScale__c}" rendered="{!isEditing3}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_PolicyTendency__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_PolicyTendency__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_PD_PayObstacle__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_PD_PayObstacle__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_DialysisPayment__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_DialysisPayment__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_FirstPayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_FirstPayScale__c}" rendered="{!isEditing3}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_PolicyTendency__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_PolicyTendency__c}" rendered="{!isEditing3}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tcp1.GA_HD_PayObstacle__c}" rendered="{!isNotEditing3}"/>
+					<apex:inputField value="{!tcp1.GA_HD_PayObstacle__c}" rendered="{!isEditing3}" style="width:70px;"/>
+				</td>
+				 -->
+			</tr>
+		</table>
+	</apex:form>
+	<br/>
+	<apex:form id="pb5x">
+		<table class="table">
+			<tr class="tabletitle3">
+				<th colspan="1" class="tabletitlebutton">
+					<apex:commandButton action="{!Saveit5}" value="保存" reRender="pb5x" rendered="{!isEditing5}"/>
+					<apex:commandButton action="{!Editit5}" value="编辑" reRender="pb5x" rendered="{!isNotEditing5}"/>	
+					<apex:commandButton action="{!CancelEdit5}" value="取消" reRender="pb5x" rendered="{!isEditing5}"/>
+				</th>
+				<th colspan="7" class="tabletitlename" >
+					城镇居民医疗保险政策
+				</th>
+				<th colspan="2" class="tabletitlespace" >
+				</th>
+			</tr>
+			<tr class="tableheader3" style="border:1px solid #e4e4e4;">
+				<th colspan="5" >腹膜透析</th>
+				<th colspan="5" >血膜透析</th>
+			</tr>
+			<tr class="dataheader">
+				<td>门诊透析付费方式</td>
+				<td>医保归类</td>
+				<td>先行自付比例</td>
+				<td>起付线</td>
+				<td>最高限/定额</td>
+				<td>门诊透析付费方式</td>
+				<td>医保归类</td>
+				<td>先行自付比例</td>
+				<td>起付线</td>
+				<td>最高限/定额</td>
+			
+				<!-- 
+				<td >按病种付费是否包含辅助用药</td>
+				<td >患者自付比例</td>
+				<td >起付线</td>
+				<td >医保归类</td>
+				<td >最高限/定额</td>
+				<td >按病种付费是否包含辅助用药</td>
+				<td >患者自付比例</td>
+				<td >起付线</td>
+				<td >医保归类</td>
+				<td >最高限/定额</td>
+				-->
+			</tr>
+			<tr class="data" >
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_DialysisPayment__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_DialysisPayment__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_HealthInsuranceType__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_HealthInsuranceType__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_FirstPayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_FirstPayScale__c}" rendered="{!isEditing5}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_StartToPay__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_StartToPay__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_MaximumLimit__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_MaximumLimit__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_DialysisPayment__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_DialysisPayment__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_HealthInsuranceType__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_HealthInsuranceType__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_FirstPayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_FirstPayScale__c}" rendered="{!isEditing5}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_StartToPay__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_StartToPay__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_MaximumLimit__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_MaximumLimit__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+			
+				<!-- 
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_PatientPayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_PatientPayScale__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_StartToPay__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_StartToPay__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_HealthInsuranceType__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_HealthInsuranceType__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_MaximumLimit__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_MaximumLimit__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_PatientPayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_PatientPayScale__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_StartToPay__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_StartToPay__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_HealthInsuranceType__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_HealthInsuranceType__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_MaximumLimit__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_MaximumLimit__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				 -->
+			</tr>
+			<tr class="dataheader">
+				<td>医保支付比例</td>
+				<td>患者自付比例</td>
+				<td>按病种付费是否包含辅助用药</td>
+				<td>政策环境评估</td>
+				<td>重要支付瓶颈</td>
+				<td>医保支付比例</td>
+				<td>患者自付比例</td>
+				<td>按病种付费是否包含辅助用药</td>
+				<td>政策环境评估</td>
+				<td>重要支付瓶颈</td>
+				
+				<!--
+				<td >门诊透析付费方式</td>
+				<td >先行自付比例</td>
+				<td >医保支付比例</td>
+				<td >政策环境评估</td>
+				<td >重要支付瓶颈</td>
+				<td >门诊透析付费方式</td>
+				<td >先行自付比例</td>
+				<td >医保支付比例</td>
+				<td >政策环境评估</td>
+				<td >重要支付瓶颈</td>
+				-->
+			</tr>
+			<tr class="data" >
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_PatientPayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_PatientPayScale__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_PolicyTendency__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_PolicyTendency__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_PayObstacle__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_PayObstacle__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_PatientPayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_PatientPayScale__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_PolicyTendency__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_PolicyTendency__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_PayObstacle__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_PayObstacle__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				
+				<!-- 
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_DialysisPayment__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_DialysisPayment__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_FirstPayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_FirstPayScale__c}" rendered="{!isEditing5}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_PolicyTendency__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_PolicyTendency__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_PD_PayObstacle__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_PD_PayObstacle__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_DialysisPayment__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_DialysisPayment__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_FirstPayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_FirstPayScale__c}" rendered="{!isEditing5}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_PolicyTendency__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_PolicyTendency__c}" rendered="{!isEditing5}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!tccp1.GA_HD_PayObstacle__c}" rendered="{!isNotEditing5}"/>
+					<apex:inputField value="{!tccp1.GA_HD_PayObstacle__c}" rendered="{!isEditing5}" style="width:70px;"/>
+				</td>
+				-->
+			</tr>
+		</table>
+	</apex:form>
+	<br/>
+	<apex:form id="pb7x">
+		<table class="table">
+			<tr class="tabletitle4">
+				<th colspan="1" class="tabletitlebutton">
+					<apex:commandButton action="{!Saveit7}" value="保存" reRender="pb7x" rendered="{!isEditing7}"/>
+					<apex:commandButton action="{!Editit7}" value="编辑" reRender="pb7x" rendered="{!isNotEditing7}"/>	
+					<apex:commandButton action="{!CancelEdit7}" value="取消" reRender="pb7x" rendered="{!isEditing7}"/>
+				</th>
+				<th colspan="7" class="tabletitlename" >
+					新农合医疗保险政策
+				</th>
+				<th colspan="2" class="tabletitlespace" >
+				</th>
+			</tr>
+			<tr class="tableheader4">
+				<th colspan="5" >腹膜透析</th>
+				<th colspan="5" >血膜透析</th>
+			</tr>
+			<tr class="dataheader">
+				<td>门诊透析付费方式</td>
+				<td>医保归类</td>
+				<td>先行自付比例</td>
+				<td>起付线</td>
+				<td>最高限/定额</td>
+				<td>门诊透析付费方式</td>
+				<td>医保归类</td>
+				<td>先行自付比例</td>
+				<td>起付线</td>
+				<td>最高限/定额</td>
+				
+				<!-- 
+				<td >按病种付费是否包含辅助用药</td>
+				<td >患者自付比例</td>
+				<td >起付线</td>
+				<td >医保归类</td>
+				<td >最高限/定额</td>
+				<td >按病种付费是否包含辅助用药</td>
+				<td >患者自付比例</td>
+				<td >起付线</td>
+				<td >医保归类</td>
+				<td >最高限/定额</td>
+				 -->
+			</tr>
+			<tr class="data" >
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_DialysisPayment__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_DialysisPayment__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_HealthInsuranceType__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_HealthInsuranceType__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_FirstPayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_FirstPayScale__c}" rendered="{!isEditing7}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_StartToPay__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_StartToPay__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_MaximumLimit__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_MaximumLimit__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_DialysisPayment__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_DialysisPayment__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_HealthInsuranceType__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_HealthInsuranceType__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_FirstPayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_FirstPayScale__c}" rendered="{!isEditing7}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_StartToPay__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_StartToPay__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_MaximumLimit__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_MaximumLimit__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+			
+				<!-- 
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_PatientPayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_PatientPayScale__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_StartToPay__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_StartToPay__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_HealthInsuranceType__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_HealthInsuranceType__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_MaximumLimit__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_MaximumLimit__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_PatientPayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_PatientPayScale__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_StartToPay__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_StartToPay__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_HealthInsuranceType__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_HealthInsuranceType__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_MaximumLimit__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_MaximumLimit__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				 -->
+			</tr>
+			<tr class="dataheader">
+				<td>医保支付比例</td>
+				<td>患者自付比例</td>
+				<td>按病种付费是否包含辅助用药</td>
+				<td>政策环境评估</td>
+				<td>重要支付瓶颈</td>
+				<td>医保支付比例</td>
+				<td>患者自付比例</td>
+				<td>按病种付费是否包含辅助用药</td>
+				<td>政策环境评估</td>
+				<td>重要支付瓶颈</td>
+				
+				<!--
+				<td >门诊透析付费方式</td>
+				<td >先行自付比例</td>
+				<td >医保支付比例</td>
+				<td >政策环境评估</td>
+				<td >重要支付瓶颈</td>
+				<td >门诊透析付费方式</td>
+				<td >先行自付比例</td>
+				<td >医保支付比例</td>
+				<td >政策环境评估</td>
+				<td >重要支付瓶颈</td>
+				-->
+			</tr>
+			<tr class="data" >
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_PatientPayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_PatientPayScale__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_PolicyTendency__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_PolicyTendency__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_PayObstacle__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_PayObstacle__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_PatientPayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_PatientPayScale__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_PolicyTendency__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_PolicyTendency__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_PayObstacle__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_PayObstacle__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				
+				<!-- 
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_DialysisPayment__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_DialysisPayment__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_FirstPayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_FirstPayScale__c}" rendered="{!isEditing7}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_PolicyTendency__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_PolicyTendency__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_PD_PayObstacle__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_PD_PayObstacle__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_DialysisPayment__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_DialysisPayment__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_FirstPayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_FirstPayScale__c}" rendered="{!isEditing7}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_PolicyTendency__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_PolicyTendency__c}" rendered="{!isEditing7}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!nc1.GA_HD_PayObstacle__c}" rendered="{!isNotEditing7}"/>
+					<apex:inputField value="{!nc1.GA_HD_PayObstacle__c}" rendered="{!isEditing7}" style="width:70px;"/>
+				</td>
+				 -->
+			</tr>
+		</table>
+	</apex:form>
+	<br />
+	<apex:form id="pb1x">
+		<table class="table">
+			<tr class="tabletitle1">
+				<th colspan="1" class="tabletitlebutton">
+					<apex:commandButton action="{!Save1}" value="保存" reRender="pb1x" rendered="{!isEditing1}"/>
+					<apex:commandButton action="{!Editit1}" value="编辑" reRender="pb1x" rendered="{!isNotEditing1}"/>	
+					<apex:commandButton action="{!CancelEdit1}" value="取消" reRender="pb1x" rendered="{!isEditing1}"/>
+				</th>
+				<th colspan="7" class="tabletitlename" >
+					城乡居民医疗保险政策
+				</th>
+				<th colspan="2" class="tabletitlespace" >
+				</th>
+			</tr>
+			<tr class="tableheader1">
+				<th colspan="5">腹膜透析</th>
+				<th colspan="5">血膜透析</th>
+			</tr>
+			<tr class="dataheader">
+				<td>门诊透析付费方式</td>
+				<td>医保归类</td>
+				<td>先行自付比例</td>
+				<td>起付线</td>
+				<td>最高限/定额</td>
+				<td>门诊透析付费方式</td>
+				<td>医保归类</td>
+				<td>先行自付比例</td>
+				<td>起付线</td>
+				<td>最高限/定额</td>
+				
+				<!-- 
+				<td>按病种付费是否包含辅助用药</td>
+				<td>患者自付比例</td>
+				<td>起付线</td>
+				<td >医保归类</td>
+				<td >最高限/定额</td>
+				<td >按病种付费是否包含辅助用药</td>
+				<td >患者自付比例</td>
+				<td >起付线</td>
+				<td >医保归类</td>
+				<td >最高限/定额</td>
+				-->
+			</tr>
+			<tr class="data" >
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_DialysisPayment__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_DialysisPayment__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_HealthInsuranceType__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_HealthInsuranceType__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_FirstPayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_FirstPayScale__c}" rendered="{!isEditing1}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_StartToPay__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_StartToPay__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_MaximumLimit__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_MaximumLimit__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_DialysisPayment__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_DialysisPayment__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_HealthInsuranceType__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_HealthInsuranceType__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_FirstPayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_FirstPayScale__c}" rendered="{!isEditing1}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_StartToPay__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_StartToPay__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_MaximumLimit__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_MaximumLimit__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				
+				<!-- 
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_PatientPayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_PatientPayScale__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_StartToPay__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_StartToPay__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_HealthInsuranceType__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_HealthInsuranceType__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_MaximumLimit__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_MaximumLimit__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_PatientPayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_PatientPayScale__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_StartToPay__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_StartToPay__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_HealthInsuranceType__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_HealthInsuranceType__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_MaximumLimit__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_MaximumLimit__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				 -->
+			</tr>
+			<tr class="dataheader">
+				<td>医保支付比例</td>
+				<td>患者自付比例</td>
+				<td>按病种付费是否包含辅助用药</td>
+				<td>政策环境评估</td>
+				<td>重要支付瓶颈</td>
+				<td>医保支付比例</td>
+				<td>患者自付比例</td>
+				<td>按病种付费是否包含辅助用药</td>
+				<td>政策环境评估</td>
+				<td>重要支付瓶颈</td>
+				<!-- 
+				<td >门诊透析付费方式</td>
+				<td >先行自付比例</td>
+				<td >医保支付比例</td>
+				<td >政策环境评估</td>
+				<td >重要支付瓶颈</td>
+				<td >门诊透析付费方式</td>
+				<td >先行自付比例</td>
+				<td >医保支付比例</td>
+				<td >政策环境评估</td>
+				<td >重要支付瓶颈</td>
+				-->
+			</tr>
+			<tr class="data" >
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_PatientPayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_PatientPayScale__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_ContainsAdjuvantDrug__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_PolicyTendency__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_PolicyTendency__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_PayObstacle__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_PayObstacle__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_PatientPayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_PatientPayScale__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_ContainsAdjuvantDrug__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_PolicyTendency__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_PolicyTendency__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_PayObstacle__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_PayObstacle__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				
+				<!-- 
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_DialysisPayment__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_DialysisPayment__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_FirstPayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_FirstPayScale__c}" rendered="{!isEditing1}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_HealthInsurancePayScale__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_PolicyTendency__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_PolicyTendency__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_PD_PayObstacle__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_PD_PayObstacle__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_DialysisPayment__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_DialysisPayment__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_FirstPayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_FirstPayScale__c}" rendered="{!isEditing1}" style="width:60px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_HealthInsurancePayScale__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_PolicyTendency__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_PolicyTendency__c}" rendered="{!isEditing1}"/>
+				</td>
+				<td >
+					<apex:outputField value="{!uar1.GA_HD_PayObstacle__c}" rendered="{!isNotEditing1}"/>
+					<apex:inputField value="{!uar1.GA_HD_PayObstacle__c}" rendered="{!isEditing1}" style="width:70px;"/>
+				</td>
+				  -->
+			</tr>
+		</table>
+	</apex:form>
+</apex:page>
