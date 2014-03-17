@@ -1,0 +1,107 @@
+global Database.QueryLocator start(Database.BatchableContext BC)
+	{
+		// 当前月份的第一天
+		Date thisMonth = Date.today().toStartOfMonth();
+		// 查询Project_End_Date__c 大于 当前月份第一天的所有Approved和Closed Won的Opportunity
+		String query = 'Select Id, Amount, CloseDate, Project_End_Date__c From Opportunity Where (StageName = \'Approved\' OR StageName = \'Closed Won\') And (Project_End_Date__c >=:' + thisMonth + ')';
+    	// 把查询结果返回给execute方法
+		return Database.getQueryLocator(query);
+   	}
+
+
+
+global void execute(Database.BatchableContext BC, List<sObject> scope)
+	{
+		// 存放所有符合条件的Opportunity的ID
+	    Set<Id> oppIdSet = new Set<Id>();
+		
+		// 准备更新插入的所有balance记录
+	    List<Balance__c> balanceList = new List<Balance__c>();
+		
+		// 存放所有符合条件的Opportunity的记录
+	    List<Opportunity> oppList = new List<Opportunity>();
+	    
+		// 从查询出来的Opportunity的记录
+	    for(sobject s : scope)
+	    {
+			// 存放所有符合条件的Opportunity的记录
+	    	oppList.add((Opportunity) s);
+			
+			// 存放所有符合条件的Opportunity的ID
+	    	oppIdSet.add(s.Id); 
+	    }
+	    
+		// 查询出所有在符合条件的Opportunity中的Debit Notes
+	    List<DB_Notes__c> DNList = [Select Date__c, Amount__c, Opportunity__c 
+	    							From DB_Notes__c
+	    							Where Opportunity__c IN: oppIdSet]; 
+	    
+		// 循环每一个每一个符合条件的Opportunity
+	    for(Opportunity opp : oppList)
+	    {
+			// 存放该业务机会CloseDate至今的过去的月份
+	    	Integer monthToToday = 0;
+			
+	    	// 获得该业务机会CloseDate到今天为止 需要统计DN的月份数
+			monthToToday = (13 - opp.CloseDate.month()) + Date.today().month() + (Date.today().year() - opp.CloseDate.year() - 1) * 12;
+	    	
+			// 循环每一个月份
+	    	for(Integer i = 1; i <= monthToToday; i++)
+	    	{
+				// 该月份该业务机会的Balance
+	    		Balance__c bl = new Balance__c();
+				// 该balance的Opportunity
+	    		bl.Opportunity__c = opp.Id;
+				// 该balance的日期
+	    		bl.Date__c = opp.CloseDate.addMonths(i).toStartOfMonth().addDays(-1);
+				// 该balance的OppAmount
+	    		bl.Opp_Amount__c = opp.Amount;
+				
+				// 计算每个月份该Opportunity的总Amount
+	    		Decimal amount = 0;
+				
+				// 存放从CloseDate迄今为止Opportunity的总Amount
+	    		Decimal sumamount = 0;
+	    		
+				// 循环每一条DN
+	    		for(DB_Notes__c dn : DNList)
+	    		{
+					// 如果这条DN在该月份并且属于该Opportunity,
+	    			if(dn.Date__c >= bl.Date__c.toStartOfMonth() && dn.Date__c <= bl.Date__c && dn.Opportunity__c == opp.Id)
+	    			{
+						// 计入该月份该Opportunity的总Amount
+	    				amount += dn.Amount__c;
+	    			}
+					// 如果这条DN在CloseDate迄今为止的时间内并且属于该Opportunity
+	    			if(dn.Date__c >= opp.CloseDate.toStartOfMonth() && dn.Date__c <= bl.Date__c && dn.Opportunity__c == opp.Id)
+	    			{
+						// 计入从CloseDate迄今为止该Opportunity的总Amount
+	    				sumamount += dn.Amount__c;
+	    			}
+	    		}
+	    		
+				// 该balance的DNMonthlyAmount
+	    		bl.DN_Monthly_Amount__c = amount;
+				
+				// 该balance的DNAmount
+	    		bl.DN_Sum_Amount__c += sumamount;
+				
+				// 该balance的externalId
+	    		if(bl.Date__c.month() < 10)
+	    		{
+					// 月份个位数的话补足0
+	    			bl.OppId_Month__c = opp.Id + String.valueOf(bl.Date__c.year()) + '0' + String.valueOf(bl.Date__c.month());
+	    		}
+	    		else
+	    		{
+					
+	    			bl.OppId_Month__c = opp.Id + String.valueOf(bl.Date__c.year()) + String.valueOf(bl.Date__c.month());
+	    		}
+				
+				// 把这条balance添加到balanceList
+				balanceList.add(bl);
+	    	}
+	    }
+	    // 插入更新 balanceList
+	    upsert balanceList OppId_Month__c;
+    }
