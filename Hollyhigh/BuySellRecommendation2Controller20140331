@@ -1,0 +1,335 @@
+/*
+ * Author: Steven
+ * Date: 2014-1-14
+ * Description: 做单项目中根据客户类型以及所选择的的行业类型来推荐相应的客户
+*/
+public class BuySellRecommendation2Controller 
+{
+    private ID projectId;
+    public ProjectHollyhigh__c projectc{get;set;}
+    public Account acc{get;set;}
+    private Map<ID,RecordType> projReIdMap;
+    private Map<String, RecordType> accReDevMap;
+    private Map<String, RecordType> recommReDevMap;
+    private ID recommRecordTypeId;
+    
+    public Boolean isRenderTab{get;set;}
+    public Boolean isRenderPageSection{get;set;}
+    public String query{get;set;}
+    
+    public List<Account> accList
+    {
+    	get
+    	{
+    		if(conset != null)
+    		{
+    			if(accList == null || accList.size() == 0)
+    			{
+    				result = conset.getRecords().size();
+    				return conset.getRecords();
+    			}
+    			return accList;
+    		}
+    		return null;
+    	}
+    	set;
+    }
+    /*
+    public List<AccountWrapper> aw
+    {
+        get
+        {
+            if(conset != null)
+            {
+            	if(aw == null || aw.size() == 0)
+            	{
+	                List<AccountWrapper> awlist = new List<AccountWrapper>();
+	                for(Account acc : (List<Account>) conset.getRecords())
+	                {
+	                    awlist.add(new AccountWrapper(acc));
+	                }
+	                return awlist;
+            	}
+                return aw;
+            }
+            return null;
+        }
+        set;
+    }
+    
+    
+    public class AccountWrapper 
+    {
+        public Boolean isChecked{get;set;}
+        public Account account{get;set;}
+        
+        public AccountWrapper()
+        {
+            isChecked = false;
+            account = new Account();
+        }
+        
+        public AccountWrapper(Account a)
+        {
+            isChecked = false;
+            account = a;
+        }
+    }
+    */
+    
+    //设置客户类型默认值
+    private void setRecordTypeValue()
+    {
+        this.projReIdMap = new Map<ID, RecordType>();
+        this.accReDevMap = new Map<String, RecordType>();
+        this.recommReDevMap = new Map<String, RecordType>();
+        
+        for(RecordType reType: [Select ID, Name, DeveloperName From RecordType Where SObjectType = 'ProjectHollyhigh__c'])
+        {
+            this.projReIdMap.put(reType.ID, reType);
+        }
+        for(RecordType reType: [Select ID, Name, DeveloperName From RecordType Where SObjectType = 'Account'])
+        {
+            this.accReDevMap.put(reType.DeveloperName, reType);
+        }
+        for(RecordType reType: [Select ID, Name, DeveloperName From RecordType Where SObjectType = 'ResourceRecommend__c'])
+        {
+            this.recommReDevMap.put(reType.DeveloperName, reType);
+        }
+        
+        //设置筛选条件客户的默认记录类型,设置将要生成的推荐的记录类型
+        if(projReIdMap.containsKey(this.projectc.RecordTypeId))
+        {
+            RecordType currentProjRe = projReIdMap.get(this.projectc.RecordTypeId);
+            if(currentProjRe.DeveloperName == 'Seller')
+            {
+                this.acc.RecordTypeId = this.accReDevMap.get('Buyer').Id;
+                this.recommRecordTypeId = this.recommReDevMap.get('Buyer').Id;
+            }
+            else if (currentProjRe.DeveloperName == 'Buyer')
+            {
+                this.acc.RecordTypeId = this.accReDevMap.get('Seller').Id;
+                this.recommRecordTypeId = this.recommReDevMap.get('Seller').Id;
+            }
+        }
+    }
+    
+    public BuySellRecommendation2Controller()
+    {
+        this.isRenderTab = false;
+        this.isRenderPageSection = false;
+        accList = new List<Account>();
+        // aw = new List<AccountWrapper>();
+        this.projectId = ApexPages.currentPage().getParameters().get('id');
+        this.projectc = [Select ID, 
+                        Name, 
+                        RecordTypeId,
+                        Account__r.Name, 
+                        Account__r.OwnerId,
+                        Account__r.ID, 
+                        Account__r.Type, 
+                        Account__r.IndustryType__c, 
+                        Account__r.industry, 
+                        Account__r.RecordTypeId,
+                        Account__r.RecordType.ID,
+                        Account__r.RecordType.Name,
+                        (Select ID, 
+                            Target_Account__c
+                        From relatedproject__r)
+                    From ProjectHollyhigh__c 
+                    Where Id =: this.projectId];
+        if(this.projectc.Account__r == null)
+        {
+            this.projectc.Account__r = new Account();
+        }
+        this.acc = projectc.Account__r;
+        this.setRecordTypeValue();
+       
+        ApexPages.Message msg = new ApexPages.Message(ApexPages.Severity.INFO, '请合理设置筛选条件后点击 “搜索”按钮开始检索目标客户');         
+        ApexPages.addMessage(msg);
+    }
+    
+    
+    public PageReference Search()
+    {
+        if(this.acc.industry==null)
+        {
+            ApexPages.Message msg = new ApexPages.Message(ApexPages.Severity.ERROR, '请选择行业信息');         
+            ApexPages.addMessage(msg);
+            return null;        
+        }
+        
+        this.query = 'Select Id, Name, isCheckedForRecomm__c, OwnerId, Owner.Name, Owner.Email';
+        this.query += ' From Account Where RecordTypeId = \'';
+        this.query += this.acc.RecordTypeId + '\'';
+        if(this.acc.IndustryType__c != null)
+        {
+            this.query += ' And IndustryType__c = \'';
+            this.query += this.acc.IndustryType__c + '\'';
+        }
+        this.query += ' And Industry = \'';
+        this.query += this.acc.industry + '\'';
+        
+        conset = new ApexPages.Standardsetcontroller(Database.getQueryLocator(query));
+        conset.setPageSize(20);
+        
+        if(conset.getRecords().size() <= 0)
+        {
+            this.isRenderTab = false;
+            this.isRenderPageSection = false;
+            ApexPages.Message msg = new ApexPages.Message(ApexPages.Severity.INFO, '按照您设置的条件，没有找到任何可推荐的客户，请合理设置条件后重新搜索');         
+            ApexPages.addMessage(msg);
+        }
+        else
+        {
+            this.isRenderTab = true;
+            this.isRenderPageSection = true;
+        }
+        
+        return null;
+    }
+    
+    public PageReference Sure()
+    {
+        List<ResourceRecommend__c> newRecommendList = new List<ResourceRecommend__c>();
+        
+        List<Task> taskList = new List<Task>();
+        Messaging.Singleemailmessage mail = new Messaging.Singleemailmessage();
+        String[] toAddresses = new List<String>();
+        
+        if(accList != null)
+        {
+	        for(Account a : accList)
+	        {
+	            if(a.isCheckedForRecomm__c)
+	            {
+	                ResourceRecommend__c recommend = new ResourceRecommend__c();
+	                recommend.Account__c = this.acc.Id;
+	                recommend.Project__c = this.projectc.Id;
+	                recommend.Target_Account__c = a.Id;
+	                recommend.RecordTypeId = this.recommRecordTypeId;
+	                newRecommendList.add(recommend);
+	                
+	                User u1 = [Select Email,Name From User Where Id =: a.OwnerId];
+	                toAddresses.add(u1.Email);
+	                
+	                Task t1 = new Task();
+	                t1.OwnerId = a.OwnerId;
+	                t1.WhatId = this.projectId;
+	                // t1.ChildProject__c = String.valueOf(this.projectc.Name);
+	                t1.Description = '现有做单项目"' + this.projectc.Name + '"需要您的关注。';
+	                t1.ActivityDate = Date.today();
+	                t1.ActivityDateTime__c = Datetime.now();
+	                t1.Subject = '请关注“' + this.projectc.Name + '” 项目';
+	                t1.Receiver__c = u1.Name;
+	                t1.Recommender__c = UserInfo.getName();
+	                taskList.add(t1);
+	            }
+	        }
+        }
+        
+        if(newRecommendList.size() == 0)
+        {
+            ApexPages.Message msg = new ApexPages.Message(ApexPages.Severity.ERROR, '请先勾选客户');         
+            ApexPages.addMessage(msg);
+            return null;        
+        }
+        
+        
+        String content = '现有做单项目"' + this.projectc.Name + '"需要您的关注。';
+        content += '以下是项目链接: ' + URL.getSalesforceBaseUrl().toExternalForm() + '/' + this.projectId;
+        mail.setPlainTextBody(content);
+        mail.setSubject('做单项目关注');
+        mail.setToAddresses(toAddresses);
+        Messaging.sendEmail(new Messaging.Singleemailmessage[]{mail});
+        insert taskList;
+        insert newRecommendList;
+        
+        PageReference redirectPag = new PageReference(URL.getSalesforceBaseUrl().toExternalForm() + '/' + this.projectId);
+        redirectPag.setRedirect(true);
+        return redirectPag;
+    }
+    
+    public PageReference Cancel()
+    {
+        PageReference redirectPag = new PageReference(URL.getSalesforceBaseUrl().toExternalForm() + '/' + this.projectId);
+        redirectPag.setRedirect(true);
+        return redirectPag; 
+    }
+
+    public ApexPages.Standardsetcontroller conset{get;set;}
+    
+    public integer result{get;set;}
+
+    public boolean hasPrevious
+    {
+        get
+        {
+            return conset.getHasPrevious();
+        }
+        set;
+    }
+    
+    public boolean hasNext
+    {
+        get
+        {
+            return conset.getHasNext();
+        }
+        set;
+    }
+    
+    public Integer pageNumber
+    {
+        get
+        {
+            return conset.getPageNumber();
+        }
+        set;
+    }
+
+    public void first()
+    {
+        conset.first();
+    }
+    
+    public void last()
+    {
+        conset.last();
+    }
+    
+    public void previous()
+    {
+        conset.previous();
+    }
+    
+    public void next()
+    {
+        conset.next();
+    }
+    
+    public Integer categoryNumber
+    {
+        get
+        {
+            return conset.getResultSize();
+        }
+        set;
+    }
+    
+    public Integer totalPageNumber
+    {
+    	get
+    	{
+    		
+    		if(Math.mod(categoryNumber,20) == 0)
+    		{
+    			return (categoryNumber / 20);
+    		}
+    		else
+    		{
+    			return ((categoryNumber / 20) + 1);
+    		}
+    	}
+    }
+}
