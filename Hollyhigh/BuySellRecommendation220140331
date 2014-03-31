@@ -1,0 +1,68 @@
+<!-- <apex:page standardController="ProjectHollyhigh__c" showHeader="true"
+	extensions="BuySellRecommendation2Controller"> -->
+<!-- Author: Steven -->
+<!-- Date: 2014-3-31 -->
+<!-- Description:  -->
+<apex:page controller="BuySellRecommendation2Controller" showHeader="true">	
+	<apex:form id="form">
+		<apex:pageBlock title="做单项目推荐">
+			<apex:outputLabel value="做单项目：{!projectc.Name}" />
+			<br />
+			<apex:outputLabel value="客户：{!acc.Name}" />
+			<br /> 
+			<apex:outputLabel value="客户类型：{!acc.RecordType.Name}" />
+			<br />
+			<apex:outputPanel > 
+				<apex:outputLabel value="客户类型" for="AccountType" />&nbsp;&nbsp;
+				<apex:inputField id="AccountType" value="{!acc.RecordTypeId}" /> &nbsp;&nbsp;
+				 
+				<apex:outputLabel value="行业" for="industry" />&nbsp;&nbsp;
+				<apex:inputField id="industry" value="{!acc.industry}" />&nbsp;&nbsp;
+				
+				<apex:outputLabel value="子行业" for="IndustryType" />&nbsp;&nbsp;
+				<apex:inputField id="IndustryType" value="{!acc.IndustryType__c}" />&nbsp;&nbsp;
+				 
+				<apex:commandButton value="搜索" reRender="ProjectPanel"
+					status="SearchStatus" action="{!Search}" />
+				<apex:actionStatus startText="搜索中..." stopText="" id="SearchStatus" />
+			</apex:outputPanel>
+		</apex:pageBlock>
+		<apex:pageBlock >
+			<apex:outputPanel id="ProjectPanel">
+			 	<apex:pageMessages />
+				<apex:pageBlockTable value="{!accList}" var="ac" id="bt" rendered="{!isRenderTab}">
+					<apex:column headerValue="选中" style="width:10px">
+						<apex:inputcheckbox value="{!ac.isCheckedForRecomm__c}" />
+					</apex:column>
+					<apex:column headerValue="客户名称">
+						<apex:outputLink value="{!URLFOR($Action.Account.View, acc.id)}">
+							<apex:outputText value="{!ac.Name}"></apex:outputText>
+						</apex:outputLink>
+					</apex:column>
+					<apex:column headerValue="所有人"> 
+						<apex:outputText value="{!ac.Owner.Name}"></apex:outputText>
+					</apex:column>
+				</apex:pageBlockTable>
+				
+				<apex:panelGrid columns="8" rendered="{!isRenderPageSection}" style="margin:0px auto">
+					<apex:commandlink action="{!first }" rendered="{!hasPrevious}">首页</apex:commandlink>
+					<apex:commandlink action="{!previous }" rendered="{!hasPrevious}">上一页</apex:commandlink>
+					<apex:commandlink action="{!next }" rendered="{!hasNext}">下一页</apex:commandlink>
+					<apex:commandlink action="{!last }" rendered="{!hasNext}">尾页</apex:commandlink>
+					<apex:outputText value="第{!pageNumber}页" />
+					<apex:outputText value="共{!totalPageNumber}页" />
+					<apex:outputText value="本页共{!result}条" />
+					<apex:outputText value="总计共{!categoryNumber}条" />
+				</apex:panelGrid>
+
+			</apex:outputPanel>
+
+			<apex:pageBlockButtons location="bottom">
+				<apex:commandButton value="确认" action="{!Sure}" />
+				<apex:commandButton value="取消" action="{!Cancel}" />
+			</apex:pageBlockButtons>
+
+		</apex:pageBlock>
+
+	</apex:form>
+</apex:page>
