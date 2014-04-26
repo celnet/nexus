@@ -1,0 +1,1350 @@
+<apex:page controller="GenerateTopNewController" sidebar="false" renderAs="{!displayPdf}">
+    <html style="font-family: 'Arial Unicode MS';{!displayFontSize}">
+<head>
+<style>
+
+@page {
+  size: 9in 12in;/* width height */
+}
+
+table tr td {
+    text-align: center;
+    height:10%;
+    width:10%;
+}
+
+.headerRow,.summaryRow{
+    background-color:#4E93B5;";
+}
+.picture {
+    width: 10%;
+}
+
+</style>
+</head>
+<body> 
+    <div style="{!displaySelect}">
+		<apex:form >
+			<apex:pageBlock >
+			<apex:pageMessages />
+			<div align="center" style="font-family: 微软雅黑; font-size: 16px;">Top 10 计算</div>
+			<div align="left" style="font-family: 微软雅黑; font-size: 13px;">
+			             1.选择日期，计算所选日期的Top 10报表数据。<br/>
+			             2.由于计算数据量大请您操作完毕后稍等一段时间再去查看相关报表,完成后您将收到邮件通知。 <br/>
+			</div>
+			<hr size= "0" color="#99CC33"  ></hr>
+			<table style="width:100%;" align="center" cellpadding ="5" border="0">
+			<tr>
+				<td Style="font-family: 微软雅黑;font-size: 15px;text-align: right;" align="right" width="50%">
+					请选择要计算Top 10的日期：
+					<apex:inputField value="{!d.Date__c}"/>
+					</td>
+					<td Style="text-align: left;">
+					<apex:commandButton action="{!generateTop}" value="运行Top10"/>
+					</td>
+				</tr>
+			</table>
+			</apex:pageBlock>
+		</apex:form>
+        <apex:form >
+            <apex:pageBlock >
+            <div align="center" style="font-family: 微软雅黑; font-size: 16px;">Top 10 报表</div>
+			<div align="left" style="font-family: 微软雅黑; font-size: 13px;">
+			             1.选择日期，查看所选时间段的Top 10报表。<br/>
+			             2.点击转为PDF按钮，将所查看Top 10报表转为PDF保存。 <br/>
+			</div>
+			<hr size= "0" color="#99CC33"  ></hr>
+			<div style="font-family: 微软雅黑;font-size: 15px;" align="center">
+				开始日期：<apex:inputField value="{!startDate.Date__c}" />
+				结束日期：<apex:inputField value="{!endDate.Date__c}" />
+				区域：
+				<apex:selectList id="region" value="{!selectedRegion}" size="1">
+					<apex:selectOptions value="{!regions}"></apex:selectOptions>
+				</apex:selectList>
+				Top类型：
+				<apex:selectList id="topOption" value="{!selectedTopOption}" size="1">
+					<apex:selectOptions value="{!topOptions}"></apex:selectOptions>
+				</apex:selectList>
+				<span style="font-size:12px;">
+				<apex:commandButton action="{!displayTopTen}" value="生成Top10报表"/>
+               	<apex:commandButton action="{!convertToPDF}" value="转为PDF"/>
+               	</span>
+			</div>
+            </apex:pageBlock>
+        </apex:form>
+        
+    </div>
+    <div >
+        <div align="center" style="font-family: 微软雅黑; font-size: 16px;">APP TOP10-All Shop - Male</div><br />
+        <table border="1" style="border-collapse: collapse;text-align:center;">
+            <tr class="headerRow" style="background-color:#4E93B5;">
+                <td class="picture">{!$ObjectType.Product_Top_Ten__c.fields.Picture__c.Label}</td>
+                <td >{!$ObjectType.Product_Top_Ten__c.fields.Region__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Ranking__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Article_Code__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Division__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Color__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Description__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.RBU__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Gender__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Season__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Original_Retail_Price__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Std_Retail_Price__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Discount_Rate__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Weekly_Sales_Unit__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Weekly_Sales_Amount__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.GP_Amount__c.Label}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, attId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image value="{!maleAppList[0].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!maleAppList[0].ranking}</td>
+                <td>{!maleAppList[0].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!maleAppList[0].color}</td>
+                <td>{!maleAppList[0].description}</td>
+                <td>{!maleAppList[0].rbu}</td>
+                <td>{!maleAppList[0].gender}</td>
+                <td>{!maleAppList[0].season}</td>
+                <td>{!maleAppList[0].originalPrice}</td>
+                <td>{!maleAppList[0].standardPrice}</td>
+                <td>{!maleAppList[0].discountRate}</td>
+                <td>{!maleAppList[0].salesQuantity}</td>
+                <td>{!maleAppList[0].salesAmount}</td>
+                <td>{!maleAppList[0].gpAmount}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, attId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image url="" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!maleAppList[1].ranking}</td>
+                <td>{!maleAppList[1].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!maleAppList[1].color}</td>
+                <td>{!maleAppList[1].description}</td>
+                <td>{!maleAppList[1].rbu}</td>
+                <td>{!maleAppList[1].gender}</td>
+                <td>{!maleAppList[1].season}</td>
+                <td>{!maleAppList[1].originalPrice}</td>
+                <td>{!maleAppList[1].standardPrice}</td>
+                <td>{!maleAppList[1].discountRate}</td>
+                <td>{!maleAppList[1].salesQuantity}</td>
+                <td>{!maleAppList[1].salesAmount}</td>
+                <td>{!maleAppList[1].gpAmount}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, attId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image value="{!maleAppList[2].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!maleAppList[2].ranking}</td>
+                <td>{!maleAppList[2].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!maleAppList[2].color}</td>
+                <td>{!maleAppList[2].description}</td>
+                <td>{!maleAppList[2].rbu}</td>
+                <td>{!maleAppList[2].gender}</td>
+                <td>{!maleAppList[2].season}</td>
+                <td>{!maleAppList[2].originalPrice}</td>
+                <td>{!maleAppList[2].standardPrice}</td>
+                <td>{!maleAppList[2].discountRate}</td>
+                <td>{!maleAppList[2].salesQuantity}</td>
+                <td>{!maleAppList[2].salesAmount}</td>
+                <td>{!maleAppList[2].gpAmount}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, attId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image value="{!maleAppList[3].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!maleAppList[3].ranking}</td>
+                <td>{!maleAppList[3].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!maleAppList[3].color}</td>
+                <td>{!maleAppList[3].description}</td>
+                <td>{!maleAppList[3].rbu}</td>
+                <td>{!maleAppList[3].gender}</td>
+                <td>{!maleAppList[3].season}</td>
+                <td>{!maleAppList[3].originalPrice}</td>
+                <td>{!maleAppList[3].standardPrice}</td>
+                <td>{!maleAppList[3].discountRate}</td>
+                <td>{!maleAppList[3].salesQuantity}</td>
+                <td>{!maleAppList[3].salesAmount}</td>
+                <td>{!maleAppList[3].gpAmount}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, attId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image value="{!maleAppList[4].Picture_URL__c}" width="60" height="100" /></td>-->
+                <td>{!selectedRegion}</td>
+                <td>{!maleAppList[4].ranking}</td>
+                <td>{!maleAppList[4].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!maleAppList[4].color}</td>
+                <td>{!maleAppList[4].description}</td>
+                <td>{!maleAppList[4].rbu}</td>
+                <td>{!maleAppList[4].gender}</td>
+                <td>{!maleAppList[4].season}</td>
+                <td>{!maleAppList[4].originalPrice}</td>
+                <td>{!maleAppList[4].standardPrice}</td>
+                <td>{!maleAppList[4].discountRate}</td>
+                <td>{!maleAppList[4].salesQuantity}</td>
+                <td>{!maleAppList[4].salesAmount}</td>
+                <td>{!maleAppList[4].gpAmount}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, attId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image value="{!maleAppList[5].Picture_URL__c}" width="60" height="100" /></td>-->
+                <td>{!selectedRegion}</td>
+                <td>{!maleAppList[5].ranking}</td>
+                <td>{!maleAppList[5].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!maleAppList[5].color}</td>
+                <td>{!maleAppList[5].description}</td>
+                <td>{!maleAppList[5].rbu}</td>
+                <td>{!maleAppList[5].gender}</td>
+                <td>{!maleAppList[5].season}</td>
+                <td>{!maleAppList[5].originalPrice}</td>
+                <td>{!maleAppList[5].standardPrice}</td>
+                <td>{!maleAppList[5].discountRate}</td>
+                <td>{!maleAppList[5].salesQuantity}</td>
+                <td>{!maleAppList[5].salesAmount}</td>
+                <td>{!maleAppList[5].gpAmount}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, attId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image value="{!maleAppList[6].Picture_URL__c}" width="60" height="100" /></td>  -->
+                <td>{!selectedRegion}</td>
+                <td>{!maleAppList[6].ranking}</td>
+                <td>{!maleAppList[6].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!maleAppList[6].color}</td>
+                <td>{!maleAppList[6].description}</td>
+                <td>{!maleAppList[6].rbu}</td>
+                <td>{!maleAppList[6].gender}</td>
+                <td>{!maleAppList[6].season}</td>
+                <td>{!maleAppList[6].originalPrice}</td>
+                <td>{!maleAppList[6].standardPrice}</td>
+                <td>{!maleAppList[6].discountRate}</td>
+                <td>{!maleAppList[6].salesQuantity}</td>
+                <td>{!maleAppList[6].salesAmount}</td>
+                <td>{!maleAppList[6].gpAmount}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, attId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image value="{!maleAppList[7].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!maleAppList[7].ranking}</td>
+                <td>{!maleAppList[7].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!maleAppList[7].color}</td>
+                <td>{!maleAppList[7].description}</td>
+                <td>{!maleAppList[7].rbu}</td>
+                <td>{!maleAppList[7].gender}</td>
+                <td>{!maleAppList[7].season}</td>
+                <td>{!maleAppList[7].originalPrice}</td>
+                <td>{!maleAppList[7].standardPrice}</td>
+                <td>{!maleAppList[7].discountRate}</td>
+                <td>{!maleAppList[7].salesQuantity}</td>
+                <td>{!maleAppList[7].salesAmount}</td>
+                <td>{!maleAppList[7].gpAmount}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, attId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image value="{!maleAppList[8].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!maleAppList[8].ranking}</td>
+                <td>{!maleAppList[8].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!maleAppList[8].color}</td>
+                <td>{!maleAppList[8].description}</td>
+                <td>{!maleAppList[8].rbu}</td>
+                <td>{!maleAppList[8].gender}</td>
+                <td>{!maleAppList[8].season}</td>
+                <td>{!maleAppList[8].originalPrice}</td>
+                <td>{!maleAppList[8].standardPrice}</td>
+                <td>{!maleAppList[8].discountRate}</td>
+                <td>{!maleAppList[8].salesQuantity}</td>
+                <td>{!maleAppList[8].salesAmount}</td>
+                <td>{!maleAppList[8].gpAmount}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, attId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image value="{!maleAppList[9].Picture_URL__c}" width="60" height="100" /></td>-->
+                <td>{!selectedRegion}</td>
+                <td>{!maleAppList[9].ranking}</td>
+                <td>{!maleAppList[9].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!maleAppList[9].color}</td>
+                <td>{!maleAppList[9].description}</td>
+                <td>{!maleAppList[9].rbu}</td>
+                <td>{!maleAppList[9].gender}</td>
+                <td>{!maleAppList[9].season}</td>
+                <td>{!maleAppList[9].originalPrice}</td>
+                <td>{!maleAppList[9].standardPrice}</td>
+                <td>{!maleAppList[9].discountRate}</td>
+                <td>{!maleAppList[9].salesQuantity}</td>
+                <td>{!maleAppList[9].salesAmount}</td>
+                <td>{!maleAppList[9].gpAmount}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">TOP10小计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!maleTopSummary.unit}</td>
+                <td>{!maleTopSummary.amount}</td>
+                <td>{!maleTopSummary.gp}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">男装销售小计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!maleTotalSummary.unit}</td>
+                <td>{!maleTotalSummary.amount}</td>
+                <td>{!maleTotalSummary.gp}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">TOP10占比男装销售</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!malePercent.unit}</td>
+                <td>{!malePercent.amount}</td>
+                <td>{!malePercent.gp}</td>
+            </tr>
+        </table>
+    </div>
+	<div style="page-break-after:always;"></div>
+    <div >
+        <div align="center" style="font-family: 微软雅黑; font-size: 16px;">APP TOP10-All Shop - Female</div><br />
+        <table border="1" style="border-collapse: collapse;text-align:center;">
+            <tr class="headerRow" style="background-color:#4E93B5;">
+                <td class="picture">{!$ObjectType.Product_Top_Ten__c.fields.Picture__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Region__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Ranking__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Article_Code__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Division__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Color__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Description__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.RBU__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Gender__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Season__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Original_Retail_Price__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Std_Retail_Price__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Discount_Rate__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Weekly_Sales_Unit__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Weekly_Sales_Amount__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.GP_Amount__c.Label}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, femaleAttId)}" width="60" height="40" /></td>
+            	<!-- <td><apex:image value="{!femaleAppList[0].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!femaleAppList[0].ranking}</td>
+                <td>{!femaleAppList[0].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!femaleAppList[0].color}</td>
+                <td>{!femaleAppList[0].description}</td>
+                <td>{!femaleAppList[0].rbu}</td>
+                <td>{!femaleAppList[0].gender}</td>
+                <td>{!femaleAppList[0].season}</td>
+                <td>{!femaleAppList[0].originalPrice}</td>
+                <td>{!femaleAppList[0].standardPrice}</td>
+                <td>{!femaleAppList[0].discountRate}</td>
+                <td>{!femaleAppList[0].salesQuantity}</td>
+                <td>{!femaleAppList[0].salesAmount}</td>
+                <td>{!femaleAppList[0].gpAmount}</td>
+            </tr>
+            <tr>
+            	<td><apex:image url="{!URLFOR($Action.Attachment.Download, femaleAttId)}" width="60" height="40" /></td>
+                <!-- <td><apex:image value="{!femaleAppList[1].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!femaleAppList[1].ranking}</td>
+                <td>{!femaleAppList[1].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!femaleAppList[1].color}</td>
+                <td>{!femaleAppList[1].description}</td>
+                <td>{!femaleAppList[1].rbu}</td>
+                <td>{!femaleAppList[1].gender}</td>
+                <td>{!femaleAppList[1].season}</td>
+                <td>{!femaleAppList[1].originalPrice}</td>
+                <td>{!femaleAppList[1].standardPrice}</td>
+                <td>{!femaleAppList[1].discountRate}</td>
+                <td>{!femaleAppList[1].salesQuantity}</td>
+                <td>{!femaleAppList[1].salesAmount}</td>
+                <td>{!femaleAppList[1].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, femaleAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!femaleAppList[2].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!femaleAppList[2].ranking}</td>
+                <td>{!femaleAppList[2].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!femaleAppList[2].color}</td>
+                <td>{!femaleAppList[2].description}</td>
+                <td>{!femaleAppList[2].rbu}</td>
+                <td>{!femaleAppList[2].gender}</td>
+                <td>{!femaleAppList[2].season}</td>
+                <td>{!femaleAppList[2].originalPrice}</td>
+                <td>{!femaleAppList[2].standardPrice}</td>
+                <td>{!femaleAppList[2].discountRate}</td>
+                <td>{!femaleAppList[2].salesQuantity}</td>
+                <td>{!femaleAppList[2].salesAmount}</td>
+                <td>{!femaleAppList[2].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, femaleAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!femaleAppList[3].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!femaleAppList[3].ranking}</td>
+                <td>{!femaleAppList[3].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!femaleAppList[3].color}</td>
+                <td>{!femaleAppList[3].description}</td>
+                <td>{!femaleAppList[3].rbu}</td>
+                <td>{!femaleAppList[3].gender}</td>
+                <td>{!femaleAppList[3].season}</td>
+                <td>{!femaleAppList[3].originalPrice}</td>
+                <td>{!femaleAppList[3].standardPrice}</td>
+                <td>{!femaleAppList[3].discountRate}</td>
+                <td>{!femaleAppList[3].salesQuantity}</td>
+                <td>{!femaleAppList[3].salesAmount}</td>
+                <td>{!femaleAppList[3].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, femaleAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!femaleAppList[4].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!femaleAppList[4].ranking}</td>
+                <td>{!femaleAppList[4].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!femaleAppList[4].color}</td>
+                <td>{!femaleAppList[4].description}</td>
+                <td>{!femaleAppList[4].rbu}</td>
+                <td>{!femaleAppList[4].gender}</td>
+                <td>{!femaleAppList[4].season}</td>
+                <td>{!femaleAppList[4].originalPrice}</td>
+                <td>{!femaleAppList[4].standardPrice}</td>
+                <td>{!femaleAppList[4].discountRate}</td>
+                <td>{!femaleAppList[4].salesQuantity}</td>
+                <td>{!femaleAppList[4].salesAmount}</td>
+                <td>{!femaleAppList[4].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, femaleAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!femaleAppList[5].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!femaleAppList[5].ranking}</td>
+                <td>{!femaleAppList[5].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!femaleAppList[5].color}</td>
+                <td>{!femaleAppList[5].description}</td>
+                <td>{!femaleAppList[5].rbu}</td>
+                <td>{!femaleAppList[5].gender}</td>
+                <td>{!femaleAppList[5].season}</td>
+                <td>{!femaleAppList[5].originalPrice}</td>
+                <td>{!femaleAppList[5].standardPrice}</td>
+                <td>{!femaleAppList[5].discountRate}</td>
+                <td>{!femaleAppList[5].salesQuantity}</td>
+                <td>{!femaleAppList[5].salesAmount}</td>
+                <td>{!femaleAppList[5].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, femaleAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!femaleAppList[6].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!femaleAppList[6].ranking}</td>
+                <td>{!femaleAppList[6].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!femaleAppList[6].color}</td>
+                <td>{!femaleAppList[6].description}</td>
+                <td>{!femaleAppList[6].rbu}</td>
+                <td>{!femaleAppList[6].gender}</td>
+                <td>{!femaleAppList[6].season}</td>
+                <td>{!femaleAppList[6].originalPrice}</td>
+                <td>{!femaleAppList[6].standardPrice}</td>
+                <td>{!femaleAppList[6].discountRate}</td>
+                <td>{!femaleAppList[6].salesQuantity}</td>
+                <td>{!femaleAppList[6].salesAmount}</td>
+                <td>{!femaleAppList[6].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, femaleAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!femaleAppList[7].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!femaleAppList[7].ranking}</td>
+                <td>{!femaleAppList[7].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!femaleAppList[7].color}</td>
+                <td>{!femaleAppList[7].description}</td>
+                <td>{!femaleAppList[7].rbu}</td>
+                <td>{!femaleAppList[7].gender}</td>
+                <td>{!femaleAppList[7].season}</td>
+                <td>{!femaleAppList[7].originalPrice}</td>
+                <td>{!femaleAppList[7].standardPrice}</td>
+                <td>{!femaleAppList[7].discountRate}</td>
+                <td>{!femaleAppList[7].salesQuantity}</td>
+                <td>{!femaleAppList[7].salesAmount}</td>
+                <td>{!femaleAppList[7].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, femaleAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!femaleAppList[8].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!femaleAppList[8].ranking}</td>
+                <td>{!femaleAppList[8].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!femaleAppList[8].color}</td>
+                <td>{!femaleAppList[8].description}</td>
+                <td>{!femaleAppList[8].rbu}</td>
+                <td>{!femaleAppList[8].gender}</td>
+                <td>{!femaleAppList[8].season}</td>
+                <td>{!femaleAppList[8].originalPrice}</td>
+                <td>{!femaleAppList[8].standardPrice}</td>
+                <td>{!femaleAppList[8].discountRate}</td>
+                <td>{!femaleAppList[8].salesQuantity}</td>
+                <td>{!femaleAppList[8].salesAmount}</td>
+                <td>{!femaleAppList[8].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, femaleAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!femaleAppList[9].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!femaleAppList[9].ranking}</td>
+                <td>{!femaleAppList[9].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!femaleAppList[9].color}</td>
+                <td>{!femaleAppList[9].description}</td>
+                <td>{!femaleAppList[9].rbu}</td>
+                <td>{!femaleAppList[9].gender}</td>
+                <td>{!femaleAppList[9].season}</td>
+                <td>{!femaleAppList[9].originalPrice}</td>
+                <td>{!femaleAppList[9].standardPrice}</td>
+                <td>{!femaleAppList[9].discountRate}</td>
+                <td>{!femaleAppList[9].salesQuantity}</td>
+                <td>{!femaleAppList[9].salesAmount}</td>
+                <td>{!femaleAppList[9].gpAmount}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">TOP10小计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!femaleTopSummary.unit}</td>
+                <td>{!femaleTopSummary.amount}</td>
+                <td>{!femaleTopSummary.gp}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">女装销售小计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!femaleTotalSummary.unit}</td>
+                <td>{!femaleTotalSummary.amount}</td>
+                <td>{!femaleTotalSummary.gp}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">TOP10占比女装销售</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!femalePercent.unit}</td>
+                <td>{!femalePercent.amount}</td>
+                <td>{!femalePercent.gp}</td>
+            </tr>
+        </table>
+    </div>
+	<div style="page-break-after:always;"></div>
+    <div>
+        <div align="center" style="font-family: 微软雅黑; font-size: 16px;">FW TOP20-All Shop</div><br />
+        <table border="1" style="border-collapse: collapse;text-align:center;">
+            <tr class="headerRow" style="background-color:#4E93B5;">
+                <td class="picture">{!$ObjectType.Product_Top_Ten__c.fields.Picture__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Region__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Ranking__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Article_Code__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Division__c.Label}</td>
+                <td style="width:5%">{!$ObjectType.Product_Top_Ten__c.fields.Color__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Description__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.RBU__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Gender__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Season__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Original_Retail_Price__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Std_Retail_Price__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Discount_Rate__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Weekly_Sales_Unit__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Weekly_Sales_Amount__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.GP_Amount__c.Label}</td>
+            </tr>
+            <tr>
+            	 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[0].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[0].ranking}</td>
+                <td>{!footwareList[0].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[0].color}</td>
+                <td>{!footwareList[0].description}</td>
+                <td>{!footwareList[0].rbu}</td>
+                <td>{!footwareList[0].gender}</td>
+                <td>{!footwareList[0].season}</td>
+                <td>{!footwareList[0].originalPrice}</td>
+                <td>{!footwareList[0].standardPrice}</td>
+                <td>{!footwareList[0].discountRate}</td>
+                <td>{!footwareList[0].salesQuantity}</td>
+                <td>{!footwareList[0].salesAmount}</td>
+                <td>{!footwareList[0].gpAmount}</td>
+            </tr>
+            <tr>
+            	 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[1].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[1].ranking}</td>
+                <td>{!footwareList[1].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[1].color}</td>
+                <td>{!footwareList[1].description}</td>
+                <td>{!footwareList[1].rbu}</td>
+                <td>{!footwareList[1].gender}</td>
+                <td>{!footwareList[1].season}</td>
+                <td>{!footwareList[1].originalPrice}</td>
+                <td>{!footwareList[1].standardPrice}</td>
+                <td>{!footwareList[1].discountRate}</td>
+                <td>{!footwareList[1].salesQuantity}</td>
+                <td>{!footwareList[1].salesAmount}</td>
+                <td>{!footwareList[1].gpAmount}</td>
+            </tr>
+            <tr>
+            	 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[2].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[2].ranking}</td>
+                <td>{!footwareList[2].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[2].color}</td>
+                <td>{!footwareList[2].description}</td>
+                <td>{!footwareList[2].rbu}</td>
+                <td>{!footwareList[2].gender}</td>
+                <td>{!footwareList[2].season}</td>
+                <td>{!footwareList[2].originalPrice}</td>
+                <td>{!footwareList[2].standardPrice}</td>
+                <td>{!footwareList[2].discountRate}</td>
+                <td>{!footwareList[2].salesQuantity}</td>
+                <td>{!footwareList[2].salesAmount}</td>
+                <td>{!footwareList[2].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[3].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[3].ranking}</td>
+                <td>{!footwareList[3].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[3].color}</td>
+                <td>{!footwareList[3].description}</td>
+                <td>{!footwareList[3].rbu}</td>
+                <td>{!footwareList[3].gender}</td>
+                <td>{!footwareList[3].season}</td>
+                <td>{!footwareList[3].originalPrice}</td>
+                <td>{!footwareList[3].standardPrice}</td>
+                <td>{!footwareList[3].discountRate}</td>
+                <td>{!footwareList[3].salesQuantity}</td>
+                <td>{!footwareList[3].salesAmount}</td>
+                <td>{!footwareList[3].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[4].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[4].ranking}</td>
+                <td>{!footwareList[4].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[4].color}</td>
+                <td>{!footwareList[4].description}</td>
+                <td>{!footwareList[4].rbu}</td>
+                <td>{!footwareList[4].gender}</td>
+                <td>{!footwareList[4].season}</td>
+                <td>{!footwareList[4].originalPrice}</td>
+                <td>{!footwareList[4].standardPrice}</td>
+                <td>{!footwareList[4].discountRate}</td>
+                <td>{!footwareList[4].salesQuantity}</td>
+                <td>{!footwareList[4].salesAmount}</td>
+                <td>{!footwareList[4].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[5].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[5].ranking}</td>
+                <td>{!footwareList[5].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[5].color}</td>
+                <td>{!footwareList[5].description}</td>
+                <td>{!footwareList[5].rbu}</td>
+                <td>{!footwareList[5].gender}</td>
+                <td>{!footwareList[5].season}</td>
+                <td>{!footwareList[5].originalPrice}</td>
+                <td>{!footwareList[5].standardPrice}</td>
+                <td>{!footwareList[5].discountRate}</td>
+                <td>{!footwareList[5].salesQuantity}</td>
+                <td>{!footwareList[5].salesAmount}</td>
+                <td>{!footwareList[5].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[6].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[6].ranking}</td>
+                <td>{!footwareList[6].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[6].color}</td>
+                <td>{!footwareList[6].description}</td>
+                <td>{!footwareList[6].rbu}</td>
+                <td>{!footwareList[6].gender}</td>
+                <td>{!footwareList[6].season}</td>
+                <td>{!footwareList[6].originalPrice}</td>
+                <td>{!footwareList[6].standardPrice}</td>
+                <td>{!footwareList[6].discountRate}</td>
+                <td>{!footwareList[6].salesQuantity}</td>
+                <td>{!footwareList[6].salesAmount}</td>
+                <td>{!footwareList[6].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[7].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[7].ranking}</td>
+                <td>{!footwareList[7].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[7].color}</td>
+                <td>{!footwareList[7].description}</td>
+                <td>{!footwareList[7].rbu}</td>
+                <td>{!footwareList[7].gender}</td>
+                <td>{!footwareList[7].season}</td>
+                <td>{!footwareList[7].originalPrice}</td>
+                <td>{!footwareList[7].standardPrice}</td>
+                <td>{!footwareList[7].discountRate}</td>
+                <td>{!footwareList[7].salesQuantity}</td>
+                <td>{!footwareList[7].salesAmount}</td>
+                <td>{!footwareList[7].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[8].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[8].ranking}</td>
+                <td>{!footwareList[8].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[8].color}</td>
+                <td>{!footwareList[8].description}</td>
+                <td>{!footwareList[8].rbu}</td>
+                <td>{!footwareList[8].gender}</td>
+                <td>{!footwareList[8].season}</td>
+                <td>{!footwareList[8].originalPrice}</td>
+                <td>{!footwareList[8].standardPrice}</td>
+                <td>{!footwareList[8].discountRate}</td>
+                <td>{!footwareList[8].salesQuantity}</td>
+                <td>{!footwareList[8].salesAmount}</td>
+                <td>{!footwareList[8].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[9].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[9].ranking}</td>
+                <td>{!footwareList[9].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[9].color}</td>
+                <td>{!footwareList[9].description}</td>
+                <td>{!footwareList[9].rbu}</td>
+                <td>{!footwareList[9].gender}</td>
+                <td>{!footwareList[9].season}</td>
+                <td>{!footwareList[9].originalPrice}</td>
+                <td>{!footwareList[9].standardPrice}</td>
+                <td>{!footwareList[9].discountRate}</td>
+                <td>{!footwareList[9].salesQuantity}</td>
+                <td>{!footwareList[9].salesAmount}</td>
+                <td>{!footwareList[9].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[10].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[10].ranking}</td>
+                <td>{!footwareList[10].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[10].color}</td>
+                <td>{!footwareList[10].description}</td>
+                <td>{!footwareList[10].rbu}</td>
+                <td>{!footwareList[10].gender}</td>
+                <td>{!footwareList[10].season}</td>
+                <td>{!footwareList[10].originalPrice}</td>
+                <td>{!footwareList[10].standardPrice}</td>
+                <td>{!footwareList[10].discountRate}</td>
+                <td>{!footwareList[10].salesQuantity}</td>
+                <td>{!footwareList[10].salesAmount}</td>
+                <td>{!footwareList[10].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[11].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[11].ranking}</td>
+                <td>{!footwareList[11].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[11].color}</td>
+                <td>{!footwareList[11].description}</td>
+                <td>{!footwareList[11].rbu}</td>
+                <td>{!footwareList[11].gender}</td>
+                <td>{!footwareList[11].season}</td>
+                <td>{!footwareList[11].originalPrice}</td>
+                <td>{!footwareList[11].standardPrice}</td>
+                <td>{!footwareList[11].discountRate}</td>
+                <td>{!footwareList[11].salesQuantity}</td>
+                <td>{!footwareList[11].salesAmount}</td>
+                <td>{!footwareList[11].gpAmount}</td>
+            </tr>
+            <tr>
+                <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[12].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[12].ranking}</td>
+                <td>{!footwareList[12].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[12].color}</td>
+                <td>{!footwareList[12].description}</td>
+                <td>{!footwareList[12].rbu}</td>
+                <td>{!footwareList[12].gender}</td>
+                <td>{!footwareList[12].season}</td>
+                <td>{!footwareList[12].originalPrice}</td>
+                <td>{!footwareList[12].standardPrice}</td>
+                <td>{!footwareList[12].discountRate}</td>
+                <td>{!footwareList[12].salesQuantity}</td>
+                <td>{!footwareList[12].salesAmount}</td>
+                <td>{!footwareList[12].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[13].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[13].ranking}</td>
+                <td>{!footwareList[13].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[13].color}</td>
+                <td>{!footwareList[13].description}</td>
+                <td>{!footwareList[13].rbu}</td>
+                <td>{!footwareList[13].gender}</td>
+                <td>{!footwareList[13].season}</td>
+                <td>{!footwareList[13].originalPrice}</td>
+                <td>{!footwareList[13].standardPrice}</td>
+                <td>{!footwareList[13].discountRate}</td>
+                <td>{!footwareList[13].salesQuantity}</td>
+                <td>{!footwareList[13].salesAmount}</td>
+                <td>{!footwareList[13].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[14].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[14].ranking}</td>
+                <td>{!footwareList[14].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[14].color}</td>
+                <td>{!footwareList[14].description}</td>
+                <td>{!footwareList[14].rbu}</td>
+                <td>{!footwareList[14].gender}</td>
+                <td>{!footwareList[14].season}</td>
+                <td>{!footwareList[14].originalPrice}</td>
+                <td>{!footwareList[14].standardPrice}</td>
+                <td>{!footwareList[14].discountRate}</td>
+                <td>{!footwareList[14].salesQuantity}</td>
+                <td>{!footwareList[14].salesAmount}</td>
+                <td>{!footwareList[14].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[15].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[15].ranking}</td>
+                <td>{!footwareList[15].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[15].color}</td>
+                <td>{!footwareList[15].description}</td>
+                <td>{!footwareList[15].rbu}</td>
+                <td>{!footwareList[15].gender}</td>
+                <td>{!footwareList[15].season}</td>
+                <td>{!footwareList[15].originalPrice}</td>
+                <td>{!footwareList[15].standardPrice}</td>
+                <td>{!footwareList[15].discountRate}</td>
+                <td>{!footwareList[15].salesQuantity}</td>
+                <td>{!footwareList[15].salesAmount}</td>
+                <td>{!footwareList[15].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[16].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[16].ranking}</td>
+                <td>{!footwareList[16].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[16].color}</td>
+                <td>{!footwareList[16].description}</td>
+                <td>{!footwareList[16].rbu}</td>
+                <td>{!footwareList[16].gender}</td>
+                <td>{!footwareList[16].season}</td>
+                <td>{!footwareList[16].originalPrice}</td>
+                <td>{!footwareList[16].standardPrice}</td>
+                <td>{!footwareList[16].discountRate}</td>
+                <td>{!footwareList[16].salesQuantity}</td>
+                <td>{!footwareList[16].salesAmount}</td>
+                <td>{!footwareList[16].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[17].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[17].ranking}</td>
+                <td>{!footwareList[17].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[17].color}</td>
+                <td>{!footwareList[17].description}</td>
+                <td>{!footwareList[17].rbu}</td>
+                <td>{!footwareList[17].gender}</td>
+                <td>{!footwareList[17].season}</td>
+                <td>{!footwareList[17].originalPrice}</td>
+                <td>{!footwareList[17].standardPrice}</td>
+                <td>{!footwareList[17].discountRate}</td>
+                <td>{!footwareList[17].salesQuantity}</td>
+                <td>{!footwareList[17].salesAmount}</td>
+                <td>{!footwareList[17].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[18].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[18].ranking}</td>
+                <td>{!footwareList[18].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[18].color}</td>
+                <td>{!footwareList[18].description}</td>
+                <td>{!footwareList[18].rbu}</td>
+                <td>{!footwareList[18].gender}</td>
+                <td>{!footwareList[18].season}</td>
+                <td>{!footwareList[18].originalPrice}</td>
+                <td>{!footwareList[18].standardPrice}</td>
+                <td>{!footwareList[18].discountRate}</td>
+                <td>{!footwareList[18].salesQuantity}</td>
+                <td>{!footwareList[18].salesAmount}</td>
+                <td>{!footwareList[18].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, footAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!footwareList[19].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!footwareList[19].ranking}</td>
+                <td>{!footwareList[19].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!footwareList[19].color}</td>
+                <td>{!footwareList[19].description}</td>
+                <td>{!footwareList[19].rbu}</td>
+                <td>{!footwareList[19].gender}</td>
+                <td>{!footwareList[19].season}</td>
+                <td>{!footwareList[19].originalPrice}</td>
+                <td>{!footwareList[19].standardPrice}</td>
+                <td>{!footwareList[19].discountRate}</td>
+                <td>{!footwareList[19].salesQuantity}</td>
+                <td>{!footwareList[19].salesAmount}</td>
+                <td>{!footwareList[19].gpAmount}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">TOP20小计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!footwareTopSummary.unit}</td>
+                <td>{!footwareTopSummary.amount}</td>
+                <td>{!footwareTopSummary.gp}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">FW销售总计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!footwareTotalSummary.unit}</td>
+                <td>{!footwareTotalSummary.amount}</td>
+                <td>{!footwareTotalSummary.gp}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">TOP20占比FW销售</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!footwarePercent.unit}</td>
+                <td>{!footwarePercent.amount}</td>
+                <td>{!footwarePercent.gp}</td>
+            </tr>
+        </table>
+    </div>
+	<div style="page-break-after:always;"></div>
+    <div >
+        <div align="center" style="font-family: 微软雅黑; font-size: 16px;">Socks TOP5-all shop</div>
+        <table border="1" style="border-collapse: collapse;text-align:center;">
+            <tr class="headerRow" style="background-color:#4E93B5;">
+                <td class="picture">{!$ObjectType.Product_Top_Ten__c.fields.Picture__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Region__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Ranking__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Article_Code__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Division__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Color__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Description__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.RBU__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Gender__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Season__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Original_Retail_Price__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Std_Retail_Price__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Discount_Rate__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Weekly_Sales_Unit__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Weekly_Sales_Amount__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.GP_Amount__c.Label}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, sockAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!sockAccList[0].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!sockAccList[0].ranking}</td>
+                <td>{!sockAccList[0].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!sockAccList[0].color}</td>
+                <td>{!sockAccList[0].description}</td>
+                <td>{!sockAccList[0].rbu}</td>
+                <td>{!sockAccList[0].gender}</td>
+                <td>{!sockAccList[0].season}</td>
+                <td>{!sockAccList[0].originalPrice}</td>
+                <td>{!sockAccList[0].standardPrice}</td>
+                <td>{!sockAccList[0].discountRate}</td>
+                <td>{!sockAccList[0].salesQuantity}</td>
+                <td>{!sockAccList[0].salesAmount}</td>
+                <td>{!sockAccList[0].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, sockAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!sockAccList[1].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!sockAccList[1].ranking}</td>
+                <td>{!sockAccList[1].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!sockAccList[1].color}</td>
+                <td>{!sockAccList[1].description}</td>
+                <td>{!sockAccList[1].rbu}</td>
+                <td>{!sockAccList[1].gender}</td>
+                <td>{!sockAccList[1].season}</td>
+                <td>{!sockAccList[1].originalPrice}</td>
+                <td>{!sockAccList[1].standardPrice}</td>
+                <td>{!sockAccList[1].discountRate}</td>
+                <td>{!sockAccList[1].salesQuantity}</td>
+                <td>{!sockAccList[1].salesAmount}</td>
+                <td>{!sockAccList[1].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, sockAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!sockAccList[2].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!sockAccList[2].ranking}</td>
+                <td>{!sockAccList[2].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!sockAccList[2].color}</td>
+                <td>{!sockAccList[2].description}</td>
+                <td>{!sockAccList[2].rbu}</td>
+                <td>{!sockAccList[2].gender}</td>
+                <td>{!sockAccList[2].season}</td>
+                <td>{!sockAccList[2].originalPrice}</td>
+                <td>{!sockAccList[2].standardPrice}</td>
+                <td>{!sockAccList[2].discountRate}</td>
+                <td>{!sockAccList[2].salesQuantity}</td>
+                <td>{!sockAccList[2].salesAmount}</td>
+                <td>{!sockAccList[2].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, sockAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!sockAccList[3].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!sockAccList[3].ranking}</td>
+                <td>{!sockAccList[3].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!sockAccList[3].color}</td>
+                <td>{!sockAccList[3].description}</td>
+                <td>{!sockAccList[3].rbu}</td>
+                <td>{!sockAccList[3].gender}</td>
+                <td>{!sockAccList[3].season}</td>
+                <td>{!sockAccList[3].originalPrice}</td>
+                <td>{!sockAccList[3].standardPrice}</td>
+                <td>{!sockAccList[3].discountRate}</td>
+                <td>{!sockAccList[3].salesQuantity}</td>
+                <td>{!sockAccList[3].salesAmount}</td>
+                <td>{!sockAccList[3].gpAmount}</td>
+            </tr>
+            <tr>
+               	 <td><apex:image url="{!URLFOR($Action.Attachment.Download, sockAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!sockAccList[4].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!sockAccList[4].ranking}</td>
+                <td>{!sockAccList[4].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!sockAccList[4].color}</td>
+                <td>{!sockAccList[4].description}</td>
+                <td>{!sockAccList[4].rbu}</td>
+                <td>{!sockAccList[4].gender}</td>
+                <td>{!sockAccList[4].season}</td>
+                <td>{!sockAccList[4].originalPrice}</td>
+                <td>{!sockAccList[4].standardPrice}</td>
+                <td>{!sockAccList[4].discountRate}</td>
+                <td>{!sockAccList[4].salesQuantity}</td>
+                <td>{!sockAccList[4].salesAmount}</td>
+                <td>{!sockAccList[4].gpAmount}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">TOP5小计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!sockTopSummary.unit}</td>
+                <td>{!sockTopSummary.amount}</td>
+                <td>{!sockTopSummary.gp}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">ACC销售小计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!sockTotalSummary.unit}</td>
+                <td>{!sockTotalSummary.amount}</td>
+                <td>{!sockTotalSummary.gp}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">TOP10占比ACC销售</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!sockPercent.unit}</td>
+                <td>{!sockPercent.amount}</td>
+                <td>{!sockPercent.gp}</td>
+            </tr>
+        </table>
+    </div>
+	<div style="page-break-after:always;"></div>
+    <div >
+        <div align="center" style="font-family: 微软雅黑; font-size: 16px;">Bags TOP5-all shop</div>
+        <table border="1" style="border-collapse: collapse;text-align:center;">
+            <tr class="headerRow" style="background-color:#4E93B5;">
+                <td class="picture">{!$ObjectType.Product_Top_Ten__c.fields.Picture__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Region__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Ranking__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Article_Code__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Division__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Color__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Description__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.RBU__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Gender__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Season__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Original_Retail_Price__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Std_Retail_Price__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Discount_Rate__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Weekly_Sales_Unit__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.Weekly_Sales_Amount__c.Label}</td>
+                <td>{!$ObjectType.Product_Top_Ten__c.fields.GP_Amount__c.Label}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, bagAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!bagAccList[0].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!bagAccList[0].ranking}</td>
+                <td>{!bagAccList[0].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!bagAccList[0].color}</td>
+                <td>{!bagAccList[0].description}</td>
+                <td>{!bagAccList[0].rbu}</td>
+                <td>{!bagAccList[0].gender}</td>
+                <td>{!bagAccList[0].season}</td>
+                <td>{!bagAccList[0].originalPrice}</td>
+                <td>{!bagAccList[0].standardPrice}</td>
+                <td>{!bagAccList[0].discountRate}</td>
+                <td>{!bagAccList[0].salesQuantity}</td>
+                <td>{!bagAccList[0].salesAmount}</td>
+                <td>{!bagAccList[0].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, bagAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!bagAccList[1].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!bagAccList[1].ranking}</td>
+                <td>{!bagAccList[1].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!bagAccList[1].color}</td>
+                <td>{!bagAccList[1].description}</td>
+                <td>{!bagAccList[1].rbu}</td>
+                <td>{!bagAccList[1].gender}</td>
+                <td>{!bagAccList[1].season}</td>
+                <td>{!bagAccList[1].originalPrice}</td>
+                <td>{!bagAccList[1].standardPrice}</td>
+                <td>{!bagAccList[1].discountRate}</td>
+                <td>{!bagAccList[1].salesQuantity}</td>
+                <td>{!bagAccList[1].salesAmount}</td>
+                <td>{!bagAccList[1].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, bagAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!bagAccList[2].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!bagAccList[2].ranking}</td>
+                <td>{!bagAccList[2].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!bagAccList[2].color}</td>
+                <td>{!bagAccList[2].description}</td>
+                <td>{!bagAccList[2].rbu}</td>
+                <td>{!bagAccList[2].gender}</td>
+                <td>{!bagAccList[2].season}</td>
+                <td>{!bagAccList[2].originalPrice}</td>
+                <td>{!bagAccList[2].standardPrice}</td>
+                <td>{!bagAccList[2].discountRate}</td>
+                <td>{!bagAccList[2].salesQuantity}</td>
+                <td>{!bagAccList[2].salesAmount}</td>
+                <td>{!bagAccList[2].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, bagAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!bagAccList[3].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!bagAccList[3].ranking}</td>
+                <td>{!bagAccList[3].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!bagAccList[3].color}</td>
+                <td>{!bagAccList[3].description}</td>
+                <td>{!bagAccList[3].rbu}</td>
+                <td>{!bagAccList[3].gender}</td>
+                <td>{!bagAccList[3].season}</td>
+                <td>{!bagAccList[3].originalPrice}</td>
+                <td>{!bagAccList[3].standardPrice}</td>
+                <td>{!bagAccList[3].discountRate}</td>
+                <td>{!bagAccList[3].salesQuantity}</td>
+                <td>{!bagAccList[3].salesAmount}</td>
+                <td>{!bagAccList[3].gpAmount}</td>
+            </tr>
+            <tr>
+                 <td><apex:image url="{!URLFOR($Action.Attachment.Download, bagAttId)}" width="60" height="40" /></td><!-- <td><apex:image value="{!bagAccList[4].Picture_URL__c}" width="60" height="100" /></td> -->
+                <td>{!selectedRegion}</td>
+                <td>{!bagAccList[4].ranking}</td>
+                <td>{!bagAccList[4].articleCode}</td>
+                <td>Apparel</td>
+                <td>{!bagAccList[4].color}</td>
+                <td>{!bagAccList[4].description}</td>
+                <td>{!bagAccList[4].rbu}</td>
+                <td>{!bagAccList[4].gender}</td>
+                <td>{!bagAccList[4].season}</td>
+                <td>{!bagAccList[4].originalPrice}</td>
+                <td>{!bagAccList[4].standardPrice}</td>
+                <td>{!bagAccList[4].discountRate}</td>
+                <td>{!bagAccList[4].salesQuantity}</td>
+                <td>{!bagAccList[4].salesAmount}</td>
+                <td>{!bagAccList[4].gpAmount}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">TOP5小计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td> 
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!bagTopSummary.unit}</td>
+                <td>{!bagTopSummary.amount}</td>
+                <td>{!bagTopSummary.gp}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">ACC销售小计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!bagTotalSummary.unit}</td>
+                <td>{!bagTotalSummary.amount}</td>
+                <td>{!bagTotalSummary.gp}</td>
+            </tr>
+            <tr class="summaryRow" style="background-color:#4E93B5;">
+                <td colspan="3">TOP10占比ACC销售</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td> 
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{!bagPercent.unit}</td>
+                <td>{!bagPercent.amount}</td>
+                <td>{!bagPercent.gp}</td>
+            </tr>
+        </table>
+    </div>
+</body>
+    </html>
+</apex:page>

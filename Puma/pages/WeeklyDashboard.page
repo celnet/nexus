@@ -1,0 +1,132 @@
+<apex:page sidebar="false" Controller="WeeklyDashboardController" renderAs="{!displayPDF}">
+	<style>
+		table tr td{
+			height:20px;
+		}
+	</style>
+	<apex:pageBlock >
+		<apex:form >
+			<apex:pageMessages />
+			<div></div>
+			<div></div>
+			<hr />
+			<div>
+				
+			</div>
+		</apex:form>
+	</apex:pageBlock>
+	<apex:pageBlock rendered="{!pdf}">
+		<apex:form >
+			<apex:pageMessages />
+			<div align="center" style="font-family: 微软雅黑; font-size: 16px;">Weekly Dashboard</div>
+			<div align="left" style="font-family: 微软雅黑; font-size: 13px;">
+			             1.选择日期和门店，生成所选门店的所选日期所在周的Dashboard数据。<br/>
+			             2.点击转为PDF将Dashboard转为可打印的PDF文件 <br/>
+			</div>
+			<hr size= "0" color="#99CC33" />
+			<div align="center" style="font-family: 微软雅黑; font-size: 13px;">
+			日期：<apex:inputField value="{!d.Date__c}" />
+			门店：<apex:selectList id="store" value="{!selectedStore}" size="1">
+				<apex:selectOptions value="{!stores}"></apex:selectOptions>
+			</apex:selectList>
+			<apex:commandButton action="{!generate}" value="生成" />
+			<apex:commandButton action="{!convert}" value="转为PDF" />
+			</div>
+		</apex:form>
+	</apex:pageBlock>
+	<table width="100%" border="1" style="height:20px;border-collapse:collapse;text-align:center;">
+		<tr>
+			<td colspan="6" style="font-family: 微软雅黑;text-align:center;background-color:red;color:white;height:20px;">FOC E2 Total Week 201417</td>
+		</tr>
+		<tr>
+			<td colspan="3" width="50%">Weekly Achievement</td>
+			<td colspan="3" width="50%">Sales Split by Div</td>
+		</tr>
+		<tr style="text-align:center">
+			<td colspan="3"><img alt="" src="http://chart.apis.google.com/chart?chs=300x100&chd=t:80,40&cht=bvs&chco=346EA8&chxt=x,y&chxl=0:|Net%20Sales|Target|1:|560|570|580|590|600|610&chbh=100" /></td>
+			<!--  <td colspan="3"><apex:image url="https://chart.apis.google.com/chart?chs=300x100&chd=t:80,40&cht=bvs&chco=346EA8&chxt=x,y&chxl=0:|Net%20Sales|Target|1:|560|570|580|590|600|610&chbh=100" /></td>
+			--><td colspan="3"><apex:image url="https://chart.apis.google.com/chart?chs=300x100&chd=t:48,36,26&cht=p&chco=346EA8,009933,CC0000&chl=FTW|APP|ACC" /></td>
+		</tr>
+		<tr>
+						<td>Net Sales</td>
+						<td>Target</td>
+						<td>Achv Rate</td>
+						<td >FTW</td>
+						<td >APP</td>
+						<td >ACC</td>
+					</tr>
+					
+				
+					<tr>
+						<td>604</td>
+						<td>576</td>
+						<td>105%</td>
+						<td>46%</td>
+						<td>48%</td>
+						<td>6%</td>
+					
+		</tr>
+		<tr>
+			<td colspan="3"></td>
+			<td colspan="3"></td>
+		</tr>
+		<tr class="datatitle">
+			<td colspan="3">Conversion Rate vs Target</td>
+			<td colspan="3">UPT vs Target</td>
+		</tr>
+		<tr>
+			<td colspan="3"><apex:image url="http://chart.apis.google.com/chart?chs=300x100&chd=t:50,89&cht=bhs&chco=346EA8&chxt=x,y&chxl=0:|0.0%|5.0%|10.0%|1:|WK CR|Target" /></td>
+			<td colspan="3"><apex:image url="http://chart.apis.google.com/chart?chs=300x100&chd=t:35,80&cht=bhs&chco=346EA8&chxt=x,y&chxl=0:|2.6|2.6|2.6|2.6|1:|WK UPT|Target" /></td>
+		</tr>
+		<tr>
+			<td>WK CR</td>
+			<td>Target</td>
+			<td>Achv Rate</td>
+			<td>WK UPT</td>
+			<td>Target</td>
+			<td>Achv Rate</td>
+		</tr>
+		<tr>
+			<td>8.5%</td>
+			<td>5.5%</td>
+			<td>154%</td>
+			<td>2.6</td>
+			<td>2.6</td>
+			<td>100%</td>		
+		</tr>
+		<tr>
+			<td colspan="3"></td>
+			<td colspan="3"></td>
+		</tr>
+		<tr class="datatitle">
+			<td colspan="3">ASP vs Target</td>
+			<td colspan="3"></td>
+		</tr>
+		<tr>
+			<td colspan="3" rowspan="3"><apex:image url="http://chart.apis.google.com/chart?chs=300x100&chd=t:80,40&cht=bhs&chco=346EA8&chxt=x,y&chxl=0:|160|180|200|220|240|1:|WK ASP|Target" /></td>
+			<td colspan="3"></td>
+		</tr>
+		<tr>
+			<td colspan="2" style="text-align:center;">MD%</td>
+			<td>62%</td>
+		</tr>
+		<tr>
+			<td colspan="2">MTD NS Comp%</td>
+			<td>4%</td>
+		</tr>
+		<tr>
+			<td>WK ASP</td>
+			<td>Target</td>
+			<td>Achv Rate</td>
+			<td colspan="2">MTD Traffic Comp%</td>
+			<td>-40%</td>
+		</tr>
+		<tr>
+			<td>192</td>
+			<td>223</td>
+			<td>86%</td>
+			<td colspan="2">GP%</td>
+			<td>45%</td>
+		</tr>
+	</table>
+</apex:page>

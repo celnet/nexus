@@ -1,0 +1,26 @@
+<apex:page controller="RunBatchController" sideBar="false">
+	<apex:form >
+		<apex:pageBlock >
+			<apex:pageMessages />
+			<div align="center" style="font-family: 微软雅黑; font-size: 16px;">Daily Sales计算</div>
+			<div align="left" style="font-family: 微软雅黑; font-size: 13px;">
+                1.选择日期，计算所选日期的Daily Sales报表数据。<br/>
+                2.由于计算数据量大请您操作完毕后稍等一段时间再去查看相关报表,完成后您将收到邮件通知。 <br/>
+            </div>
+            <hr size= "0" color="#99CC33"  ></hr>
+			<table style="width:100%" align="center" cellpadding ="5" border="0">
+				<tr>
+					<td Style="font-family: 微软雅黑;font-size: 15px;" align="right" width="50%">
+					请选择要计算Daily Sales的日期：
+					<apex:inputField value="{!d.Date__c}" />
+					</td>
+					<td align="left">
+					<apex:commandButton action="{!Run}" value="生成Daily Sales报表" status="runStatus"/>
+					<apex:commandButton action="{!RunMonthly}" value="test月份Daily Sales" status="runStatus"/>
+					<apex:actionStatus startText="运行中" stopText="" id="runStatus"/>
+					</td>
+				</tr>
+			</table>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>
