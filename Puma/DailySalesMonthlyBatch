@@ -1,0 +1,472 @@
+/*
+ * Author: Steven
+ * Date: 2014-4-20
+ * Description: Batch生成指定月份的DailySales
+ */
+global class DailySalesMonthlyBatch implements Database.Batchable<sObject>,Database.Stateful
+{
+	global Integer daysInThisMonth;
+	global Date monthStartDate;
+	global Date monthEndDate;
+	global final String query;
+	global final Date runDate;
+	
+	global DailySalesMonthlyBatch(Date d)
+	{
+		runDate = d;
+		daysInThisMonth = Date.daysInMonth(d.year(),d.month());
+		monthStartDate = d.toStartOfMonth();
+		monthEndDate = d.toStartOfMonth().addDays(Date.daysInMonth(d.year(),d.month()) - 1);
+		
+		query = 'Select Id,Store_Type__c From Store__c';
+	}
+	
+	global Database.Querylocator start(Database.BatchableContext BC)
+	{ 
+		return Database.getQueryLocator(query);
+	}
+	
+	global void execute(Database.BatchableContext BC, List<sObject> scope)
+	{
+		List<Daily_Sales__c> insertDSList = new List<Daily_Sales__c>();
+		List<Daily_Sales__c> existDSList = new List<Daily_Sales__c>();
+		List<Target__c> thisYearTargetList = new List<Target__c>();
+		List<Target__c> lastYearTargetList = new List<Target__c>();
+		List<Traffic__c> lastYearTrafficList = new List<Traffic__c>();
+		List<Raw_Data__c> lastYearRawDataList = new List<Raw_Data__c>();
+		List<Date> dateList = new List<Date>();
+		
+		for(Integer i = 0; i<Date.daysInMonth(runDate.year(),runDate.month()); i++)
+		{
+			dateList.add(runDate.toStartOfMonth().addDays(i));
+		}
+		
+		// 本月所有Targets
+		thisYearTargetList = [Select 
+								Id, Sales_Volume__c, Store__c, Date_Import__c 
+							  From 
+							  	Target__c 
+							  Where 
+							  	Date_Import__c >=: monthStartDate And Date_Import__c <=: monthEndDate];
+		// 去年本月所有Targets
+		lastYearTargetList = [Select 
+								Id, Sales_Volume__c, Store__c, Date_Import__c 
+							  From 
+							  	Target__c 
+							  Where 
+							  	Date_Import__c >=: monthStartDate.addYears(-1) And Date_Import__c <=: monthEndDate.addYears(-1)];
+		
+		// 去年本月所有Traffics
+		lastYearTrafficList = [Select 
+								Traffic_Amount__c, Id, Store__c, Date_Import__c 
+							   From 
+								Traffic__c 
+							   Where 
+								Date_Import__c >=: monthStartDate.addYears(-1) And Date_Import__c <=: monthEndDate.addYears(-1)];
+		
+		// 去年本月所有Raw Datas
+		lastYearRawDataList = [Select 
+								Billing_Doc__c, GP_Amt__c, Division__c, Sales_Amt__c, Sales_Qty__c, Store__c, Transaction_Date__c 
+							   From 
+								Raw_Data__c 
+							   Where 
+								Transaction_Date__c >=: monthStartDate.addYears(-1) And Transaction_Date__c <=: monthEndDate.addYears(-1)];
+		
+		// 本月的Daily Sales
+		existDSList = [Select Id From Daily_Sales__c Where Date2__c >=:monthStartDate And Date2__c <=: monthEndDate And Daily_Sales_Type__c = 'Store'];
+		
+		
+		// 按门店
+		if(existDSList.size() == 0)
+		{
+			for(Date d: dateList)
+			{
+				Map<String,Daily_Sales__c> dsByTypeMap = new Map<String,Daily_Sales__c>();
+				
+				Daily_Sales__c dsAll = new Daily_Sales__c();
+				
+				dsAll.Date2__c = d;
+				dsAll.Daily_Sales_External_ID__c = 'All-' + d;
+				dsAll.Daily_Sales_Type__c = 'All';
+
+				for(Store__c r : (List<Store__c>) scope)
+				{
+					Daily_Sales__c dsByType = new Daily_Sales__c();
+					dsByType.Date2__c = d;
+					
+					if(dsByTypeMap.get(r.Store_Type__c) == null)
+					{
+						dsByType.Daily_Sales_Type__c = 'Store Type';
+						dsByType.Store_Type__c = r.Store_Type__c;
+						dsByType.Daily_Sales_External_ID__c = d + '-' + 'Store Type-' + r.Store_Type__c;
+					}
+					else
+					{
+						dsByType = dsByTypeMap.get(r.Store_Type__c);
+					}
+					
+					
+					
+					Daily_Sales__c ds = new Daily_Sales__c();
+					ds.Daily_Sales_Type__c = 'Store';
+					ds.Store__c = r.Id;
+					ds.Date2__c = d;
+					ds.Daily_Sales_External_ID__c = d + '-' + r.Id;
+					
+				
+					// 赋值今年Target
+					if(thisYearTargetList.size() > 0)
+					{
+						for(Target__c t1 : thisYearTargetList)
+						{
+							if(t1.Sales_Volume__c == null)
+							{
+								t1.Sales_Volume__c = 0;	
+							}
+							
+							if(t1.Store__c == r.Id && t1.Date_Import__c == d)
+							{
+								ds.Target__c = t1.Id;
+								ds.Sales_Target_This_Year_New__c = t1.Sales_Volume__c;
+								
+								if(dsAll.Sales_Target_This_Year_New__c == null)
+								{
+									dsAll.Sales_Target_This_Year_New__c = t1.Sales_Volume__c;
+								}
+								else
+								{
+									dsAll.Sales_Target_This_Year_New__c += t1.Sales_Volume__c;
+								}
+								
+								if(dsByType.Sales_Target_This_Year_New__c == null)
+								{
+									dsByType.Sales_Target_This_Year_New__c = t1.Sales_Volume__c;
+								}
+								else
+								{
+									dsByType.Sales_Target_This_Year_New__c += t1.Sales_Volume__c;
+								}
+							}
+						}
+					}
+					
+					// 赋值去年Target
+					if(lastYearTargetList.size() > 0)
+					{
+						for(Target__c t2 : lastYearTargetList)
+						{
+							if(t2.Sales_Volume__c == null)
+							{
+								t2.Sales_Volume__c = 0;
+							}
+							
+							if(t2.Store__c == r.Id && t2.Date_Import__c == d.addYears(-1))
+							{	
+								ds.Sales_Target_Last_Year__c = t2.Sales_Volume__c;
+								
+								if(dsAll.Sales_Target_Last_Year__c == null)
+								{
+									dsAll.Sales_Target_Last_Year__c = t2.Sales_Volume__c;
+								}
+								else
+								{
+									dsAll.Sales_Target_Last_Year__c	+= t2.Sales_Volume__c;
+								}
+								
+								if(dsByType.Sales_Target_This_Year_New__c == null)
+								{
+									dsByType.Sales_Target_This_Year_New__c = t2.Sales_Volume__c;
+								}
+								else
+								{
+									dsByType.Sales_Target_This_Year_New__c += t2.Sales_Volume__c;
+								}
+							}
+						}
+					}
+					
+					// 赋值去年的Traffic
+					if(lastYearTrafficList.size() > 0)
+					{
+						for(Traffic__c t : lastYearTrafficList)
+						{
+							if(t.Store__c == r.Id)
+							{
+								if(t.Traffic_Amount__c == null)
+								{
+									t.Traffic_Amount__c = 0;	
+								}
+								
+								if(t.Date_Import__c == d)
+								{
+									ds.Traffic_Last_Year__c = t.Traffic_Amount__c;
+									
+									if(dsAll.Traffic_Last_Year__c == null)
+									{
+										dsAll.Traffic_Last_Year__c = t.Traffic_Amount__c;
+									}
+									else
+									{
+										dsAll.Traffic_Last_Year__c += t.Traffic_Amount__c;
+									}
+									
+									if(dsByType.Traffic_Last_Year__c == null)
+									{
+										dsByType.Traffic_Last_Year__c = t.Traffic_Amount__c;
+									}
+									else
+									{
+										dsByType.Traffic_Last_Year__c += t.Traffic_Amount__c;
+									}
+								}
+								
+								if(t.Date_Import__c >= d.addYears(-1).toStartOfMonth() && t.Date_Import__c <= d.addYears(-1))
+								{
+									if(ds.Traffic_Last_Year_MTD__c == null)
+									{
+										ds.Traffic_Last_Year_MTD__c = t.Traffic_Amount__c;
+									}
+									else
+									{
+										ds.Traffic_Last_Year_MTD__c += t.Traffic_Amount__c;
+									}
+									
+									if(dsAll.Traffic_Last_Year_MTD__c == null)
+									{
+										dsAll.Traffic_Last_Year_MTD__c = t.Traffic_Amount__c;
+									}
+									else
+									{
+										dsAll.Traffic_Last_Year_MTD__c += t.Traffic_Amount__c;
+									}
+									
+									if(dsByType.Traffic_Last_Year_MTD__c == null)
+									{
+										dsByType.Traffic_Last_Year_MTD__c = t.Traffic_Amount__c;
+									}
+									else
+									{
+										dsByType.Traffic_Last_Year_MTD__c += t.Traffic_Amount__c;
+									}
+								}
+							}
+						}
+					}
+					
+					// 赋值去年的Raw Data
+					if(lastYearRawDataList.size() > 0)
+					{
+						Map<String,Double> lastYearBillingMap = new Map<String,Double>();
+						Map<String,Double> MTDLastYearBillingMap = new Map<String,Double>();
+						
+						for(Raw_Data__c rdc : lastYearRawDataList)
+						{
+							if(rdc.Store__c == r.Id)
+							{
+								if(rdc.Transaction_Date__c == d.addYears(-1))
+								{
+									if(ds.Actual_Sales_Last_Year__c == null)
+									{
+										ds.Actual_Sales_Last_Year__c = rdc.Sales_Amt__c;
+									}
+									else
+									{
+										ds.Actual_Sales_Last_Year__c += rdc.Sales_Amt__c;
+									}
+									
+									if(ds.Actual_Sales_Last_Year_Net__c == null)
+									{
+										ds.Actual_Sales_Last_Year_Net__c = (rdc.Sales_Amt__c/1.17);
+									}
+									else
+									{
+										ds.Actual_Sales_Last_Year_Net__c += (rdc.Sales_Amt__c/1.17);
+									}
+									
+									if(dsByType.Actual_Sales_Last_Year__c == null)
+									{
+										dsByType.Actual_Sales_Last_Year__c = rdc.Sales_Amt__c;
+									}
+									else
+									{
+										dsByType.Actual_Sales_Last_Year__c += rdc.Sales_Amt__c;
+									}
+									
+									if(dsByType.Actual_Sales_Last_Year_Net__c == null)
+									{
+										dsByType.Actual_Sales_Last_Year_Net__c = (rdc.Sales_Amt__c/1.17);
+									}
+									else
+									{
+										dsByType.Actual_Sales_Last_Year_Net__c += (rdc.Sales_Amt__c/1.17);
+									}
+									
+									if(dsAll.Actual_Sales_Last_Year__c == null)
+									{
+										dsAll.Actual_Sales_Last_Year__c = rdc.Sales_Amt__c;
+									}
+									else
+									{
+										dsAll.Actual_Sales_Last_Year__c += rdc.Sales_Amt__c;
+									}
+									
+									if(dsAll.Actual_Sales_Last_Year_Net__c == null)
+									{
+										dsAll.Actual_Sales_Last_Year_Net__c = (rdc.Sales_Amt__c/1.17);
+									}
+									else
+									{
+										dsAll.Actual_Sales_Last_Year_Net__c += (rdc.Sales_Amt__c/1.17);
+									}
+									
+									if(lastYearBillingMap.get(rdc.Billing_Doc__c) == null)
+									{
+										lastYearBillingMap.put(rdc.Billing_Doc__c,1);
+									}
+									else
+									{
+										lastYearBillingMap.put(rdc.Billing_Doc__c,lastYearBillingMap.get(rdc.Billing_Doc__c) + 1);
+									}
+									
+								}
+								
+								if(rdc.Transaction_Date__c <= d.addYears(-1) && rdc.Transaction_Date__c >= d.toStartOfMonth().addYears(-1))
+								{
+									if(ds.Actual_Sales_Last_Year_MTD__c == null)
+									{
+										ds.Actual_Sales_Last_Year_MTD__c = rdc.Sales_Amt__c;
+									}
+									else
+									{
+										ds.Actual_Sales_Last_Year_MTD__c += rdc.Sales_Amt__c;
+									}
+									
+									if(ds.Actual_Sales_Last_Year_MTD_Net__c == null)
+									{
+										ds.Actual_Sales_Last_Year_MTD_Net__c = (rdc.Sales_Amt__c/1.17);
+									}
+									else
+									{
+										ds.Actual_Sales_Last_Year_MTD_Net__c += (rdc.Sales_Amt__c/1.17);
+									}
+								
+									if(dsByType.Actual_Sales_Last_Year_MTD__c == null)
+									{
+										dsByType.Actual_Sales_Last_Year_MTD__c = rdc.Sales_Amt__c;
+									}
+									else
+									{
+										dsByType.Actual_Sales_Last_Year_MTD__c += rdc.Sales_Amt__c;
+									}
+									
+									if(dsByType.Actual_Sales_Last_Year_MTD_Net__c == null)
+									{
+										dsByType.Actual_Sales_Last_Year_MTD_Net__c = (rdc.Sales_Amt__c/1.17);
+									}
+									else
+									{
+										dsByType.Actual_Sales_Last_Year_MTD_Net__c += (rdc.Sales_Amt__c/1.17);
+									}
+								
+									if(dsAll.Actual_Sales_Last_Year_MTD__c == null)
+									{
+										dsAll.Actual_Sales_Last_Year_MTD__c = rdc.Sales_Amt__c;
+									}
+									else
+									{
+										dsAll.Actual_Sales_Last_Year_MTD__c += rdc.Sales_Amt__c;
+									}
+									
+									if(dsAll.Actual_Sales_Last_Year_MTD_Net__c == null)
+									{
+										dsAll.Actual_Sales_Last_Year_MTD_Net__c = (rdc.Sales_Amt__c/1.17);
+									}
+									else
+									{
+										dsAll.Actual_Sales_Last_Year_MTD_Net__c += (rdc.Sales_Amt__c/1.17);
+									}
+									
+									if(MTDLastYearBillingMap.get(rdc.Billing_Doc__c) == null)
+									{
+										MTDLastYearBillingMap.put(rdc.Billing_Doc__c, 1);
+									}
+									else
+									{
+										MTDLastYearBillingMap.put(rdc.Billing_Doc__c, MTDLastYearBillingMap.get(rdc.Billing_Doc__c) + 1);
+									}
+								}
+							}
+						}
+						
+						ds.No_of_Tx_Last_Year__c = lastYearBillingMap.size();
+						ds.No_of_Tx_Last_Year_MTD__c = MTDLastYearBillingMap.size();
+						
+						if(dsByType.No_of_Tx_Last_Year__c == null)
+						{
+							dsByType.No_of_Tx_Last_Year__c = lastYearBillingMap.size();
+						}
+						else
+						{
+							dsByType.No_of_Tx_Last_Year__c += lastYearBillingMap.size();
+						}
+						
+						if(dsByType.No_of_Tx_Last_Year_MTD__c == null)
+						{
+							dsByType.No_of_Tx_Last_Year_MTD__c = MTDLastYearBillingMap.size();
+						}
+						else
+						{
+							dsByType.No_of_Tx_Last_Year_MTD__c += MTDLastYearBillingMap.size();
+						}
+						
+						if(dsAll.No_of_Tx_Last_Year__c == null)
+						{
+							dsAll.No_of_Tx_Last_Year__c = lastYearBillingMap.size();
+						}
+						else
+						{
+							dsAll.No_of_Tx_Last_Year__c += lastYearBillingMap.size();
+						}
+						
+						if(dsAll.No_of_Tx_Last_Year_MTD__c == null)
+						{
+							dsAll.No_of_Tx_Last_Year_MTD__c = MTDLastYearBillingMap.size();
+						}
+						else
+						{
+							dsAll.No_of_Tx_Last_Year_MTD__c += MTDLastYearBillingMap.size();
+						}
+					}
+					
+					dsByTypeMap.put(r.Store_Type__c, dsByType);
+					
+					insertDSList.add(ds);
+				}
+				
+				if(dsByTypeMap != null)
+				{
+					if(dsByTypeMap.values() != null)
+					{
+						if(dsByTypeMap.values().size() > 0)
+						{
+							insertDSList.addAll(dsByTypeMap.values());
+						}
+					}
+				}
+				
+				insertDSList.add(dsAll);
+			}
+		}
+		
+		if(insertDSList.size() > 0)
+		{
+			upsert insertDSList Daily_Sales_External_ID__c;
+		}
+	}
+	
+	global void finish(Database.BatchableContext BC)
+	{
+		DailySalesBatch dsb = new DailySalesBatch(runDate);
+		Database.executeBatch(dsb, 1);
+	}
+}
