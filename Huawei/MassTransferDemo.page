@@ -1,0 +1,127 @@
+<apex:page controller="MassTransferDemo">
+        <apex:includeScript value="{!$Resource.jquery}"/>
+        <apex:define name="body">
+              <apex:form id="form">
+              <script>
+            var j$ = jQuery.noConflict();
+            j$(document).ready(function(){
+                
+                //对于没有NC数据的Table显示为空
+                var pbTitle = j$(".editPage .pbTitle");
+                j$(".customerScrollBar>table").find("tbody").each(function(){ initTable(j$(this));});
+                j$(".pbBody").css('margin','0').css('border','0');
+                j$(".pbBody table").css('border','0');
+                j$(".pbBody table").css('border-top','1px');
+                j$(".pbTitle").remove();
+                j$(".pbBottomButtons").css('margin-top','0');
+                j$(".pbBottomButtons .pbButtonb").css('text-align','center');
+                j$(".pbButton").css('text-align','center');
+                j$(".editPage .pbHeader table tr").remove();
+                j$(".editPage .pbHeader table").append(pbTitle);
+            });
+            
+            function initTable(table) {
+                if(""==table.html()) {
+                    var html = "<tr class=\"dataRow even first last\" "+
+                      "onmouseover=\"if (window.hiOn){hiOn(this);} \" "+
+                      "onmouseout=\"if (window.hiOff){hiOff(this);} \" "+
+                      "onblur=\"if (window.hiOff){hiOff(this);}\" "+
+                      "onfocus=\"if (window.hiOn){hiOn(this);}\"> "+
+                    "<td class=\"dataCell\" style=\"color:gray;\" colspan=\"4\"> "+
+                    "<label>{!$Label.VF_Easy_No_Records_To_Display}</label></td></tr>";
+                    table.html(html);
+                }
+            }
+            
+            function validQuery(){
+            	var owner = j$("#j_id0\\:form\\:j_id4\\:accOwner").val();
+            	var representativeOffice = j$("#j_id0\\:form\\:j_id4\\:RepOffice option:selected").val();
+            	
+            	if(owner == '' && representativeOffice == 'null'){
+            		alert('{!$ObjectType.Account.Fields.OwnerId.Label}' + ' 和' + ' {!$ObjectType.Account.Fields.Representative_Office__c.Label}' + ' 两个筛选条件至少填写其中一个');
+            		return false;
+            	}
+            }
+            
+        </script>
+                  <apex:pageBlock title="批量转移客户和机会点" mode="edit">
+                      
+                      <apex:pageBlockButtons location="bottom">
+                          <apex:commandButton action="{!query}" value="查找" onclick="return validQuery();"/>
+                      </apex:pageBlockButtons>
+                      <apex:outputPanel ><br/>&nbsp;&nbsp;&nbsp;</apex:outputPanel>
+                      <apex:selectList value="{!selected}" size="1">
+                          <apex:selectOptions value="{!options}" />
+                      </apex:selectList>
+                      
+                      <apex:outputLabel value="{!$ObjectType.Account.Fields.OwnerId.Label}" for="accOwner" /><apex:inputField id="accOwner" value="{!acc.OwnerId}" required="false"/>
+                      <apex:outputLabel value="{!$ObjectType.Account.Fields.Representative_Office__c.Label}" for="representa" />
+                      <apex:selectList value="{!selectedRepresentativeOffice}" size="1" id="RepOffice">
+                      	<apex:selectOptions value="{!representativeOfficeOptions}" />
+                      </apex:selectList>
+                      
+                        <apex:outputPanel ><br/>&nbsp;&nbsp;&nbsp;</apex:outputPanel>
+                  </apex:pageBlock>
+                <apex:pageMessages />
+                <apex:pageBlock rendered="{!IF(displayAccounts,true,IF(displayOpportunities, true, false))}">
+                
+                    <apex:pageBlockTable value="{!awList}" var="aw" rendered="{!displayAccounts}">
+                        <apex:column headerValue="{!$ObjectType.Account.Fields.OwnerId.Label}">
+                            <apex:inputField value="{!aw.newowner.OwnerId}" rendered="{!aw.editable}" required="false"/>
+                            <apex:outputField value="{!aw.newowner.OwnerId}" rendered="{!IF(aw.editable,false,true)}"/>
+                        </apex:column>
+                        <apex:repeat value="{!$ObjectType.Account.FieldSets.Mass_Transfer_Owner_Display_Fields}" var="f">
+                            <apex:column headerValue="{!$ObjectType.Account.Fields[f].Label}">
+                                <apex:outputField value="{!aw.account[f]}"/>
+                            </apex:column>
+                        </apex:repeat>
+                        <apex:column headerValue="状态" rendered="{!displayStatus}">
+                            <apex:outputText value="{!aw.saveStatus}" style="color:{!aw.statusColor}"/>
+                        </apex:column>
+                        
+                    </apex:pageBlockTable>
+                    
+                    <apex:pageBlockTable value="{!owList}" var="ow" rendered="{!displayOpportunities}">
+                        
+                        <apex:column headerValue="{!$ObjectType.Opportunity.Fields.OwnerId.Label}">
+                            <apex:inputField value="{!ow.newowner.OwnerId}" rendered="{!ow.editable}" required="false"/>
+                            <apex:outputField value="{!ow.newowner.OwnerId}" rendered="{!IF(ow.editable,false,true)}"/>
+                        </apex:column>
+                        <apex:column headerValue="{!$ObjectType.Account.Fields.Name.Label}">
+                        	<apex:outputField value="{!ow.opportunity.Account.Name}"/>
+                        </apex:column>
+                        <apex:repeat value="{!$ObjectType.Opportunity.FieldSets.Mass_Transfer_Owner}" var="f" >
+                        <apex:column headerValue="{!$ObjectType.Opportunity.Fields[f].Label}">
+                            <apex:outputField value="{!ow.opportunity[f]}"/>
+                        </apex:column>
+                        </apex:repeat>
+                        <apex:column headerValue="状态" rendered="{!displayStatus}">
+                            <apex:outputText value="{!ow.saveStatus}" style="color:{!ow.statusColor}"/>
+                        </apex:column>
+                        
+                    </apex:pageBlockTable>
+                    
+                    <apex:pageBlockButtons >
+                        <table>
+	                        <tr>
+		                        <td style="width:20%">
+		                        	<apex:commandButton action="{!save}" value="转移" />
+		                        </td>
+		                        <td style="width:10%"></td>
+		                        <td style="width:40%">
+			                        <apex:commandButton value="首页" action="{!paginator.first}" disabled="{!IF(paginator.hasPrevious, false, true)}" />
+			                        <apex:commandButton value="上一页" action="{!paginator.previous}" disabled="{!IF(paginator.hasPrevious, false, true)}"/>
+			                        <apex:commandButton value="下一页" action="{!paginator.next}" disabled="{!IF(paginator.hasNext, false, true)}" />
+			                        <apex:commandButton value="末页" action="{!paginator.last}" disabled="{!IF(paginator.hasNext, false, true)}"/>
+		                        </td>
+		                        <td style="width:30%;vertical-align:middle;">
+		                        	<apex:outputText value="第{!paginator.pageNumberDisplayFriendly}页/共{!paginator.pageCount}页 ，共{!paginator.recordCount}条记录" />
+		                        </td>
+	                        </tr>
+                        </table>
+                    </apex:pageBlockButtons>
+                </apex:pageBlock>
+            </apex:form>
+            
+        </apex:define>
+</apex:page>
