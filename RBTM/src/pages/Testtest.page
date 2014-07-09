@@ -1,0 +1,158 @@
+<apex:page docType="html-5.0" applyBodyTag="false" applyHtmlTag="false" showHeader="false" standardStylesheets="false"  standardController="Store__c" extensions="Add4PExtension" id="thispage">
+  <head> 
+    <title>Add 4P</title>
+    <meta charset="utf-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    
+    <!-- jQuery Mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" /> 
+    <apex:stylesheet value="https://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.css" />
+    <apex:includeScript value="https://code.jquery.com/jquery-1.9.1.min.js"/>
+    <apex:includeScript value="https://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js"/>
+
+    <!-- Salesforce1 -->
+    <apex:includeScript value="/canvas/sdk/js/publisher.js" />
+
+    <!-- Image Processor -->
+    <script src="{!URLFOR($Resource.CanvasResize, 'jquery.exif.js')}"></script>
+    <script src="{!URLFOR($Resource.CanvasResize, 'jquery.canvasResize.js')}"></script>
+    <script src="{!URLFOR($Resource.CanvasResize, 'canvasResize.js')}"></script>
+    <script>
+        var sf1Data;
+        var fileResized;
+        var fileOriginal;
+        $j = jQuery.noConflict();
+        var fileOriginalReader = new FileReader();
+        Visualforce.remoting.timeout = 120000;
+        
+        // Process submit button clicked
+        Sfdc.canvas.publisher.subscribe({name: "publisher.post", onData:function(e) {
+            SubmitData();
+        }}); 
+        
+        function SubmitData() {
+            $j('#statusPopupID').popup('open');
+        
+            sf1Data.store4P.Store__c = '{!Store__c.id}';
+
+            sf1Data.store4P.Price__c = $j('#Price').val();
+            sf1Data.store4P.Promotion__c = $j('#Promotion').val();
+            sf1Data.store4P.Facings__c = $j('#Facings').val();
+            sf1Data.store4P.SOF__c = $j('#SOF').val();
+            if('{!displaygeneral}' == ''){
+                sf1Data.store4P.Check_Type__c = 'General';
+            } else if('{!displaygeneral}' == 'display:none;') {
+                sf1Data.store4P.Check_Type__c = 'SKU';
+            }
+            
+            if($j('#thispage\\:thisform\\:Segment').val() != ''){
+              // sf1Data.store4P.Segment__c = $j('#thispage\\:thisform\\:Segment').val();
+            }
+            if($j('#Item').val() != ''){
+              sf1Data.store4P.Item__c = $j('#Item').val();
+            }
+            
+            Add4PExtension.submitData(sf1Data, function(result, event) {
+                $j('#statusPopupID').popup('close');
+                if(event.status) {
+                    if (result.isSuccess) {
+                        if (typeof sforce == 'undefined') {
+                            alert('Record [' + result.recordID + '] has been added');
+                        } else {
+                            // if('{!displaygeneral}' == ''){
+                                sforce.one.navigateToSObject('{!Store__c.id}');
+                                Sfdc.canvas.publisher.publish({name: "publisher.close", payload:{refresh:"true"}});
+                           // }else if('{!displaygeneral}' == 'display:none;') {
+                            //  sforce.one.editRecord(result.recordID);
+                             //   Sfdc.canvas.publisher.publish({name: "publisher.close", payload:{refresh:"true"}});
+                           // }
+                        }
+                    } else {
+                        alert(result.message);
+                    }
+                } else {
+                    alert(event.message);
+                    alert("Visualforce Remoting Failed");
+                }
+            });
+        }
+    
+        $j(document).ready(function() {
+            // Enable submit button
+            // alert('Init');
+            Sfdc.canvas.publisher.publish({name: "publisher.setValidForSubmit", payload:"true"});
+            sf1Data = {"apexType":"c.Add4PExtension.sf1Data"};
+            sf1Data.store4P = {};
+            sf1Data.image = {"apexType":"c.AttachStore4PPhoto.sf1Data"};
+            
+        });
+        
+        function fileChosen(fileChosenEvent) {
+            // Get file
+            fileOriginal = fileChosenEvent.files[0];
+            
+            // Is it an image?
+            if(!fileOriginal.type.match()) {
+                alert('Must use an image! Received: ' + fileOriginal.type);
+                return;
+            }
+            
+            // Process large image
+            fileOriginalReader.readAsDataURL(fileOriginal);
+        }
+        
+        fileOriginalReader.onload = function(fileOriginalReaderEvent) {
+            resizeImage();
+        };
+        
+        function resizeImage() {
+            // Resize Image
+            $j.canvasResize(fileOriginal, {
+                width:500,
+                height:0,
+                crop:false,
+                quality:80,
+                callback: function(data, width, height) {
+                    sf1Data.image.name = fileOriginal.name;
+                    sf1Data.image.contentType = fileOriginal.type;
+                    sf1Data.image.sImage = data;
+                    sf1Data.image.bodyLength = data.length;
+                }
+            });
+        }
+
+        function goback() {
+            $j('#statusPopupID').popup('open');
+            
+            sforce.one.navigateToSObject('{!Store__c.id}');
+            Sfdc.canvas.publisher.publish({name: "publisher.close", payload:{refresh:"true"}});
+        }
+        
+        function confirmCheckType(){
+            $j('#statusPopupID').popup('open');
+            if($j('#CheckType').val() == 'SKU'){
+                sku();
+                //Sfdc.canvas.publisher.publish({name: "publisher.close", payload:{refresh:"true"}});
+            } else if($j('#CheckType').val() == 'General'){
+                general();
+                //Sfdc.canvas.publisher.publish({name: "publisher.close", payload:{refresh:"true"}});
+            }
+            
+        }
+        
+        function filterItems(){
+            filter();
+        }
+    </script>
+  </head>
+  <body>
+  <apex:form id="thisform">
+  	<apex:actionFunction name="filter" action="{!filterItems}" />
+    <apex:actionFunction name="sku" action="{!displaysku}"/>
+    <apex:actionFunction name="general" action="{!displaygeneral}"/>
+    
+    <apex:inputFile value="{!itemPhoto.Body}" filename="{!itemPhoto.name}" accept="image/*;capture=camera"/> 
+  	<apex:commandButton value="Submit" action="{!attachFile}"/>
+  </apex:form>
+  </body>
+</apex:page>

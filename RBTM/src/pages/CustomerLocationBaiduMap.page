@@ -1,0 +1,41 @@
+<apex:page sidebar="false" showheader="false" standardController="Customer__c" >
+<!-- This API key needs to be set up for there to be no JS errors -->
+<!--http://salesforcesolutions.blogspot.com/2013/01/ integration-of-salesforcecom-and-google.html-->
+<!--<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVrfZm7_NhbLjHrFPdl242BYV1PBmDPqs&sensor=false"> </script>-->
+<!-- Set up the map to take up the whole window -->
+<!-- Begin Default Content REMOVE THIS -->
+<head>
+<script src="http://api.map.baidu.com/api?ak=vhw8GmN4SOWwGKKOHwlQlgiW&v=2.0" type="text/javascript"></script>  
+<script src="http://developer.baidu.com/map/jsdemo/demo/convertor.js" type="text/javascript"></script>
+<style type="text/css">  
+body, html,#l-map {width: 100%;height: 100%;overflow: hidden;hidden;margin:0;}  
+</style> 
+</head>
+<body>  
+<div id="l-map"></div>  
+</body>
+<script type="text/javascript"> 
+
+var map = new BMap.Map("l-map");
+var address = "{!Customer__c.Address__c}";
+var city = "{!Customer__c.City__r.City_Name_Local__c}";
+
+// 创建地址解析器实例   
+var myGeo = new BMap.Geocoder();    
+// 将地址解析结果显示在地图上，并调整地图视野  
+myGeo.getPoint(address, function(point){    
+ if (point) {    
+   map.centerAndZoom(point, 15);    
+   var marker = new BMap.Marker(point);
+   map.addOverlay(marker);    
+   
+   var infoWindow1 = new BMap.InfoWindow("{!Customer__c.Name}", {enableMessage:false});
+   marker.addEventListener("click", function(){this.openInfoWindow(infoWindow1);});
+   // alert(point);
+ }else{
+   alert("Oops! Please make sure the address \"{!Customer__c.Address__c}\" is correct.");
+ }    
+}, city);   
+
+</script>
+</apex:page>

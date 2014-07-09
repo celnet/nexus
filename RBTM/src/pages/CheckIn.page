@@ -1,0 +1,59 @@
+<apex:page docType="html-5.0" applyBodyTag="false" applyHtmlTag="false" cache="true" showHeader="false" standardStylesheets="false"  standardController="Store__c" extensions="CheckInController">
+ <apex:includeScript value="/soap/ajax/21.0/connection.js" />
+    <apex:includeScript value="/soap/ajax/21.0/apex.js" />
+<head> 
+    <title>CheckIn</title>
+    <meta charset="utf-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    
+    <!-- Include in Google's Maps API via JavaScript static resource -->
+    
+    <!-- jQuery Mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <apex:stylesheet value="https://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.css" />
+    <apex:includeScript value="https://code.jquery.com/jquery-1.9.1.min.js"/>
+    <apex:includeScript value="https://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js"/>
+    
+    <!-- Salesforce1 -->
+    <apex:includeScript value="/canvas/sdk/js/publisher.js" />
+
+    <!-- Image Processor -->
+    <script src="{!URLFOR($Resource.CanvasResize, 'jquery.exif.js')}"></script>
+    <script src="{!URLFOR($Resource.CanvasResize, 'jquery.canvasResize.js')}"></script>
+    <script src="{!URLFOR($Resource.CanvasResize, 'canvasResize.js')}"></script>
+    
+ </head>
+    
+    <script>
+    var LAT;
+    var LONG;
+    
+          // Find GPS Location
+        function findLocation() {
+            if(navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition (
+                        // successFunction
+                        function(position) {
+                            LAT = position.coords.latitude;
+                            LONG = position.coords.longitude;
+                        },
+                        // errorFunction
+                        function(position) {
+                            alert("Geolocation not available");
+                        }
+                    );
+            } else {
+                alert("navigator.geolocation is not available");
+            }
+        }
+        
+    </script>
+    
+    <apex:form >
+        <!-- Define the JavaScript function sayHello-->
+        <apex:actionFunction name="create" action="{!Create}" rerender="out" status="myStatus"/>
+        
+    </apex:form>
+   	 <script>window.setTimeout(create,2000)</script>
+   	 
+    </apex:page>

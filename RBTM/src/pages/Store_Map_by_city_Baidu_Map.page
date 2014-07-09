@@ -1,0 +1,130 @@
+<apex:page standardController="City__c">
+
+<head>
+<apex:includeScript value="/soap/ajax/29.0/connection.js"/>
+<apex:includeScript value="/soap/ajax/29.0/apex.js"/> 
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="http://api.map.baidu.com/api?ak=vhw8GmN4SOWwGKKOHwlQlgiW&v=2.0" type="text/javascript"></script>  
+<script src="http://developer.baidu.com/map/jsdemo/demo/convertor.js" type="text/javascript"></script>
+<script type="text/javascript"> 
+
+var __sfdcSessionId = '{!GETSESSIONID()}';
+var _Selected = 'all';
+function changeSelected()
+{
+    _Selected = $("#sel").find("option:selected").text();
+    //location.replace(location.href);
+    //window.reload();
+    loadMap();
+}
+function setSelect()
+{
+    sforce.connection.sessionId = '{!$Api.Session_ID}';
+    //获取页面元素
+    var sel = document.getElementById("sel");
+    var vSql = "select Chain__r.Name From Store__c Where City__c = '{!City__c.Id}' group by Chain__r.Name";
+    
+    var qr = sforce.connection.query(vSql);
+    var vr = qr.getArray('records');
+    $("#sel").empty();
+    $("#sel").append("<option>all</option>");
+    if(vr.length >0 )
+    {
+        for(var j=0;j<vr.length;j++)
+        {
+            if(vr[j].Name == _Selected)
+            {
+                $("#sel").append("<option selected='selected'>"+vr[j].Name+"</option>");
+            }else{
+                $("#sel").append("<option>"+vr[j].Name+"</option>");
+            }
+            
+        }
+    }
+}
+function loadMap()
+{
+    sforce.connection.sessionId = '{!$Api.Session_ID}';
+    setSelect();
+    
+    var map = new BMap.Map("l-map");
+    
+    // 创建地址解析器实例   
+    var myGeo = new BMap.Geocoder(); 
+    //门店信息
+    var Query
+    if(_Selected == 'all'){
+        Query = "Select Id,Name,Address__c From Store__c Where City__c = '{!City__c.Id}' order by Name";
+    }else{
+        Query = "Select Id,Name,Address__c From Store__c Where City__c = '{!City__c.Id}' And Chain__r.Name = '"+ _Selected + "' order by Name";
+    }
+    
+    var queryResult = sforce.connection.query(Query);
+    var vResult = queryResult.getArray('records');
+   
+    var address;
+    var vlocation ;
+    var city;
+    if(vResult.length > 0)
+    {
+        for(var i=0;i<100;i++)
+        {
+            address = '';
+            address = vResult[i].Address__c;
+            city = "{!City__c.City_Name_Local__c}";
+            SetMarkerBaidu(myGeo, map, address, vResult[i].Id, i, vResult[i].Name,city);
+        }
+    }
+    //alert('!!~');
+}
+
+function SetMarkerBaidu(myGeo, map, address, recordId, i, storename,city){
+    
+    // 将地址解析结果显示在地图上，并调整地图视野
+    myGeo.getPoint(address, function(point){  
+     if (point) {    
+       if(i == 0){
+           map.centerAndZoom(point, 15);
+           var opts = {type: BMAP_NAVIGATION_CONTROL_SMALL}    
+            map.addControl(new BMap.NavigationControl(opts));    
+       }
+       var marker = new BMap.Marker(point);
+       map.addOverlay(marker);    
+       // alert(marker);
+       var a = "<a href="+"'"+"https://ap1.salesforce.com/"+recordId+"'"+" target='_blank'><I>Detail<I></a>";
+       var infoWindow1 = new BMap.InfoWindow(storename + a, {enableMessage:false});
+       marker.addEventListener("click", function(){this.openInfoWindow(infoWindow1);});
+       // alert(point);
+     }else{
+       
+     }    
+    }, city);   
+}
+
+
+$(document).ready(function() {
+    loadMap();   
+});
+</script>
+
+<style>
+#l-map {
+  font-family: Arial;
+  font-size:12px;
+  line-height:normal !important;
+  height:800px;
+  background:transparent;
+}
+</style>
+
+</head>
+
+<body>
+
+<p>
+<select id = "sel" onchange="changeSelected();"></select>
+</p>
+<div id="l-map"></div> 
+
+</body> 
+</apex:page>

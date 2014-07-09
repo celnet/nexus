@@ -1,0 +1,110 @@
+<apex:page sidebar="false" showheader="false" standardController="Store__c" recordSetVar="stores" extensions="FindNearbyStoreExtension">
+<!-- This API key needs to be set up for there to be no JS errors -->
+<!--http://salesforcesolutions.blogspot.com/2013/01/ integration-of-salesforcecom-and-google.html-->
+<!--<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVrfZm7_NhbLjHrFPdl242BYV1PBmDPqs&sensor=false"> </script>-->
+<!-- Set up the map to take up the whole window -->
+<!-- Begin Default Content REMOVE THIS -->
+<head>
+<script src="http://api.map.baidu.com/api?ak=vhw8GmN4SOWwGKKOHwlQlgiW&v=2.0" type="text/javascript"></script>  
+<script src="http://developer.baidu.com/map/jsdemo/demo/convertor.js" type="text/javascript"></script>
+<style type="text/css">  
+body, html,#l-map {width: 100%;height: 100%;overflow: hidden;hidden;margin:0;}  
+</style> 
+<script type="text/javascript"> 
+    Visualforce.remoting.timeout = 120000;
+
+    var lat, lon;
+    // Check to see if the device has geolocation detention capabilities with JS
+    if (navigator.geolocation) {
+        // alert(navigator.geolocation);
+        navigator.geolocation.getCurrentPosition(
+            function(position){
+                // alert(position);
+                lat = position.coords.latitude;
+                lon = position.coords.longitude;
+                // alert(lon + ',' + lat);
+                // Use VF Remoting to send values to be queried in the associated Apex Class
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.FindNearbyStoreExtension.getNearby}',lat,lon,
+                    function(result,event){
+                        if(event.status) {
+                            // alert(result);
+                            console.log(result);
+                            createMap(lat,lon,result);
+                        } else if(event.type === 'exception') {
+                            // exception case code
+                        } else {
+                        
+                        }
+                    },
+                    {escape:true}
+                );
+            },
+            function(positionerror){
+                alert(positionerror.code);
+            },
+            function(positionoption){
+                
+            }
+        );
+    } else {
+        alert('Geolocation detention is incapable.');
+    }
+
+
+function createMap(lat, lng, stores) {
+    // Grab the map div and center the map at the proper latitude/longitude
+    // alert(stores.length);
+    var map = new BMap.Map("l-map");  
+    // alert(lat + ',' + lng);
+    //坐标转换完之后的回调函数
+    translateCallback = function (point){
+        // alert(point.lat + ',' + point.lng);
+        map.centerAndZoom(new BMap.Point(point.lng, point.lat), 15);  
+    
+        var store;
+        for(var i=0; i<stores.length;i++) {
+            store = stores[i];
+            console.log(stores[i]);
+            setupMarker(map,store);
+        }
+    }
+    
+    BMap.Convertor.translate(new BMap.Point(lng,lat),0,translateCallback);     //转换为百度坐标
+}
+
+function setupMarker(map,store){
+    if(store.Streetname__c == undefined){
+        store.Streetname__c = '';
+    }
+    
+    if(store.Phone__c == undefined){
+        store.Phone__c = '';
+    }
+    var content = '<span style="font-size:1.5em"><strong><a href="/' + store.Id + '" >' + store.Name + '</a></strong></span><br/>' + 'Address: ' + store.Streetname__c + ' ' + store.City__r.Name +'<br/>' + 'Phone: ' + store.Phone__c;
+    // alert(content);
+    var infoWindow = new BMap.InfoWindow(content,{enableMessage:false});
+    // alert(store.Geolocation__Longitude__s);
+    // alert(store.Geolocation__Latitude__s);
+    
+    // 若Store的坐标为百度坐标则不转换
+    // var marker = new BMap.Marker(newBMap.Point(store.Geolocation__Longitude__s,store.Geolocation__Latitude__s));
+    // map.addOverlay(marker);
+    // marker.addEventListener("click", function(){this.openInfoWindow(infoWindow)});
+        
+    // 若Store的坐标为GPS坐标则转换为百度坐标
+    translateCallback = function (point) {
+        var marker = new BMap.Marker(new BMap.Point(point.lng, point.lat));            
+        map.addOverlay(marker);
+        marker.addEventListener("click", function(){this.openInfoWindow(infoWindow)});
+    }
+    BMap.Convertor.translate(new BMap.Point(store.Geolocation__Longitude__s,store.Geolocation__Latitude__s),0,translateCallback); 
+}
+
+</script>
+</head>
+<body>  
+<div id="l-map"></div>  
+</body>
+
+</apex:page>

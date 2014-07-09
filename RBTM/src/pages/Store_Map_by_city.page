@@ -1,0 +1,140 @@
+<apex:page standardController="City__c">
+
+<head>
+<apex:includeScript value="/soap/ajax/29.0/connection.js"/>
+<apex:includeScript value="/soap/ajax/29.0/apex.js"/> 
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script> 
+<script type="text/javascript"> 
+
+var __sfdcSessionId = '{!GETSESSIONID()}';
+var _Selected = 'all';
+function changeSelected()
+{
+    _Selected = $("#sel").find("option:selected").text();
+    //location.replace(location.href);
+    //window.reload();
+    loadMap();
+}
+function setSelect()
+{
+    sforce.connection.sessionId = '{!$Api.Session_ID}';
+    //获取页面元素
+    var sel = document.getElementById("sel");
+    var vSql = "select Chain__r.Name From Store__c Where City__c = '{!City__c.Id}' group by Chain__r.Name";
+    
+    var qr = sforce.connection.query(vSql);
+    var vr = qr.getArray('records');
+    $("#sel").empty();
+    $("#sel").append("<option>all</option>");
+    if(vr.length >0 )
+    {
+        for(var j=0;j<vr.length;j++)
+        {
+            if(vr[j].Name == _Selected)
+            {
+                $("#sel").append("<option selected='selected'>"+vr[j].Name+"</option>");
+            }else{
+                $("#sel").append("<option>"+vr[j].Name+"</option>");
+            }
+            
+        }
+    }
+}
+function loadMap()
+{
+    sforce.connection.sessionId = '{!$Api.Session_ID}';
+    setSelect();
+    var myOptions = {
+        zoom: 11,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControl: false
+    }
+    var map = new google.maps.Map(document.getElementById("map"), myOptions);
+    
+
+    var geocoder = new google.maps.Geocoder();
+    //门店信息
+    var Query
+    if(_Selected == 'all'){
+        Query = "Select Id,Name,Address__c From Store__c Where City__c = '{!City__c.Id}' order by Name";
+    }else{
+        Query = "Select Id,Name,Address__c From Store__c Where City__c = '{!City__c.Id}' And Chain__r.Name = '"+ _Selected + "' order by Name";
+    }
+    
+    var queryResult = sforce.connection.query(Query);
+    var vResult = queryResult.getArray('records');
+    
+    
+    var address;
+    var vlocation ;
+    if(vResult.length > 0)
+    {
+        for(var i=0;i<vResult.length;i++)
+        {
+            address = '';
+            address = vResult[i].Address__c;
+            SetMarker(geocoder , map , vResult[i].Id , address , i ,vResult[i].Name) ;
+        }
+    }
+    //alert('!!~');
+}
+function SetMarker(geocoder , map , recordId , address , i , storename)
+{
+    geocoder.geocode( { address: address}, function(results, status) {
+        if (status == google.maps.GeocoderStatus.OK && results.length) {
+            if (status != google.maps.GeocoderStatus.ZERO_RESULTS) {
+                //create marker
+                vlocation = results[0].geometry.location;
+                
+                var marker = new google.maps.Marker({
+                    position: results[0].geometry.location,
+                    map: map
+                    //title: storename
+                });
+                
+                map.setCenter(results[0].geometry.location);
+                //add listeners
+                var a = "<a href="+"'"+"https://ap1.salesforce.com/"+recordId+"'"+" target='_blank'><I>Detail<I></a>";
+                
+                var infowindow = new google.maps.InfoWindow();
+                //infowindow.setContent(results[0].formatted_address+"</span><br/>"+a);
+                infowindow.setContent("<span style='white-space : nowrap;'>"+storename+"</span><br/>"+a);
+                google.maps.event.addListener(marker, 'click', function() {
+                  infowindow.open(map,marker);
+                });
+                google.maps.event.addListener(infowindow, 'closeclick', function() {
+                  //map.setCenter(marker.getPosition()); 
+                });
+            }
+
+        } 
+        
+    });
+}
+$(document).ready(function() {
+    loadMap();   
+});
+</script>
+
+<style>
+#map {
+  font-family: Arial;
+  font-size:12px;
+  line-height:normal !important;
+  height:800px;
+  background:transparent;
+}
+</style>
+
+</head>
+
+<body>
+
+<p>
+<select id = "sel" onchange="changeSelected();"></select>
+</p>
+<div id="map"></div> 
+
+</body> 
+</apex:page>

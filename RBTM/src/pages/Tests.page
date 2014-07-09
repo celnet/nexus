@@ -1,0 +1,57 @@
+<apex:page docType="html-5.0" applyBodyTag="false" applyHtmlTag="false" cache="true" showHeader="false" standardStylesheets="false" standardController="Store__c" extensions="AddStore4PExtension">
+    <apex:stylesheet value="https://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.css" />
+    <apex:includeScript value="https://code.jquery.com/jquery-1.9.1.min.js"/>
+    <apex:includeScript value="https://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js"/>
+    
+    <!-- Salesforce1 -->
+    <apex:includeScript value="/canvas/sdk/js/publisher.js" />
+
+    <!-- Image Processor -->
+    <script src="{!URLFOR($Resource.CanvasResize, 'jquery.exif.js')}"></script>
+    <script src="{!URLFOR($Resource.CanvasResize, 'jquery.canvasResize.js')}"></script>
+    <script src="{!URLFOR($Resource.CanvasResize, 'canvasResize.js')}"></script>
+  
+  <!-- Begin Default Content REMOVE THIS -->
+  <h3>Store: {!Store__c.Name}</h3>
+  <div style="{!displayEdit}">
+  <h1>Congratulations</h1>
+  <label for="Item" class="select">Item:</label>
+            <select name="Item" id="Item" data-mini="true">
+               <apex:repeat value="{!itemsOptions}" var="itemsOption">
+                   <apex:repeat value="{!itemsOption.optionList}" var="oll">
+                       <option value="{!oll.value}">{!oll.label}</option>
+                   </apex:repeat>
+               </apex:repeat>
+            </select>
+            <label for="Image">Item Photo<sup>*</sup>:</label>
+            <input type="file" accept="image/*" name="Image" id="Image" data-mini="true" onchange="fileChosen(this)"/>
+            <div id="ImagePreview" ></div>
+            
+            <label for="Segment" class="select">Segment:</label>
+            <select name="Segment" id="Segment" data-mini="true">
+               <apex:repeat value="{!Segments}" var="Segment">
+                   <option value="{!Segment.value}">{!Segment.label}</option>
+               </apex:repeat>
+            </select>
+
+            <label for="Facings">Facings:</label>
+            <input type="number" step="0.01" name="Facings" id="Facings" data-mini="true" />
+
+            <label for="Price">Price:</label>
+            <input type="number" step="0.01" name="Price" id="Price" data-mini="true" />
+
+            <label for="Promotion">Promotion:</label>
+            <input type="number" step="0.01" name="Promotion" id="Promotion" data-mini="true" />
+
+            <label for="SOF">SOF:</label>
+            <input type="number" step="0.01" name="SOF" id="SOF" data-mini="true" />
+            
+            <div style="text-align:center;"><a href="javascript:SubmitData();" data-role="button" data-inline="true" data-mini="true" data-theme="b" >Submit</a></div>
+            *For some Android devices, taking photo may not work properly. Use Chatter photo in the plus button at the bottom right corner instead (after you submitted).
+  </div>
+  <apex:form > 
+      <apex:commandButton value="test" action="{!test}"/>
+  </apex:form>
+  This is your new Page
+  <!-- End Default Content REMOVE THIS -->
+</apex:page>
