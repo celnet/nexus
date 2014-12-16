@@ -1,0 +1,140 @@
+<apex:page standardController="Opportunity" showHeader="false"
+    extensions="ForecastExtension" id="pv">
+    
+    <apex:form id="f">
+        <div class="pbBody">
+            <table>
+                <tr>
+                    <td style="if (IsEdit==true,'','display: none')"><apex:commandButton style="width:35px;" value="Save" action="{!saveRecords}"
+                            reRender="pv:f:panel,pv:m" /></td>
+                    <td style="if (IsEdit==true,'','display: none')"><apex:commandButton style="width:35px;" value="Add" action="{!addLine}"
+                            reRender="pv:f:panel" /></td>
+                    <td style="width:35px;"></td>
+                    <td style="if (IsEdit==true,'','display: none')">
+                        <apex:selectList value="{!selectedYear}" size="1">
+                            <apex:selectOptions value="{!years}" />
+                            <apex:actionSupport event="onchange" 
+                                    action="{!refreshRecords}" 
+                                    rerender="pv:f:panel" status="yearchange"/>
+                        </apex:selectList>
+                        <apex:actionStatus startText="loading......" id="yearchange"></apex:actionStatus>
+                    </td>
+                </tr>
+            </table>
+            <br />
+            <apex:outputPanel id="panel">
+                <apex:messages />
+                <table class="list" cellspacing="0" cellpadding="0" border="0"
+                    width="100%"
+                    style="padding: 0px; margin: 0px; border: solid thin #B4B4B4">
+                    <tr class="headerRow"
+                        style="background: #F2F3F3; align: center; border-top-color: #B4B4B4;">
+                        <td class="headerRow" align="center"
+                            style="border-top: solid thin #B4B4B4;">Action</td>
+                        <td class="headerRow" align="center"
+                            style="border-top: solid thin #B4B4B4; border-left-color: #B4B4B4; border-buttom-color: #B4B4B4">Product</td>
+                        <td class="headerRow" align="center"
+                            style="border-top: solid thin #B4B4B4; border-left-color: #B4B4B4; border-buttom-color: #B4B4B4">Q1</td>
+                        <td class="headerRow" align="center"
+                            style="border-top: solid thin #B4B4B4; border-left-color: #B4B4B4; border-buttom-color: #B4B4B4">Q2</td>
+                        <td class="headerRow" align="center"
+                            style="border-top: solid thin #B4B4B4; border-left-color: #B4B4B4; border-buttom-color: #B4B4B4">Q3</td>
+                        <td class="headerRow" align="center"
+                            style="border-top: solid thin #B4B4B4; border-left-color: #B4B4B4; border-buttom-color: #B4B4B4">Q4</td>
+                        <td class="headerRow" align="center"
+                            style="border-top: solid thin #B4B4B4; border-left-color: #B4B4B4; border-buttom-color: #B4B4B4">GP</td>
+                    </tr>
+
+                    <apex:repeat value="{!fwList}" var="item">
+                        <tr>
+                            <td class="dataCell"
+                                style="padding-left: 1; padding-right: 0; border-top-color: #B4B4B4; border-buttom-color: #B4B4B4; width: 10%">
+                                <apex:commandLink style="{!if(IsEdit==true,'','display:none')};"
+                                    action="{!editRecord}" value="Edit" id="Update" reRender="pv:f:panel">
+                                    <apex:param name="upd" assignTo="{!Index}"
+                                        value="{!item.Index}" />
+                                </apex:commandLink>&nbsp;&nbsp; <apex:commandLink style="{!if(IsEdit==true,'','display:none')};" action="{!deleteRecord}"
+                                    value="Delete" id="Delete" reRender="pv:f:panel">
+                                    <apex:param name="del" assignTo="{!Index}"
+                                        value="{!item.Index}" />
+                                </apex:commandLink>
+                            </td>
+                            <td class="dataCell" width="15%"
+                                style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-buttom-color: #B4B4B4;">
+                                <apex:outputText value="{!item.forecast.Product_Article__c}"
+                                    style="{!if(item.IsEdit==true,'display:none','')}" /> 
+                                    <apex:inputText value="{!item.forecast.Product_Article__c}" style="{!if(item.IsEdit==false,'display:none','')}" />
+                            </td>
+                            <td class="dataCell" width="15%"
+                                style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-buttom-color: #B4B4B4;">
+                                HKD&nbsp;
+                                <apex:outputField value="{!item.forecast.Q1__c}" rendered="{!if(item.IsEdit==true,false,true)}"
+                                    style="{!if(item.IsEdit==true,'display:none','')}" /> 
+                                    <apex:inputText value="{!item.forecast.Q1__c}" style="{!if(item.IsEdit==false,'display:none','')}" />
+                            </td>
+                            <td class="dataCell" width="15%"
+                                style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-buttom-color: #B4B4B4;">
+                                HKD&nbsp;
+                                <apex:outputField value="{!item.forecast.Q2__c}" rendered="{!if(item.IsEdit==true,false,true)}"
+                                    style="{!if(item.IsEdit==true,'display:none','')}" /> 
+                                    <apex:inputText value="{!item.forecast.Q2__c}" style="{!if(item.IsEdit==false,'display:none','')}" />
+                            </td>
+                            <td class="dataCell"
+                                style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-buttom-color: #B4B4B4; width: 15%">
+                                HKD&nbsp;
+                                <apex:outputField value="{!item.forecast.Q3__c}" rendered="{!if(item.IsEdit==true,false,true)}"
+                                    style="{!if(item.IsEdit==true,'display:none','')}" /> 
+                                    <apex:inputText value="{!item.forecast.Q3__c}" style="{!if(item.IsEdit==false,'display:none','')}" />
+                            </td>
+                            <td class="dataCell"
+                                style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-buttom-color: #B4B4B4; width: 15%">
+                                HKD&nbsp;
+                                <apex:outputField value="{!item.forecast.Q4__c}" rendered="{!if(item.IsEdit==true,false,true)}"
+                                    style="{!if(item.IsEdit==true,'display:none','')}" /> 
+                                    <apex:inputText value="{!item.forecast.Q4__c}" style="{!if(item.IsEdit==false,'display:none','')}" />
+                            </td>
+                            <td class="dataCell" width="15%"
+                                style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-buttom-color: #B4B4B4">
+                                <apex:outputField value="{!item.forecast.GP__c}"/> 
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    <tr>
+                        <td class="headerRow"
+                            style="background: #F2F3F3; text-align: center; font-size: .9em; font-weight: bold; #B4B4B4;border-top: solid thin #B4B4B4;">
+                            <apex:outputText value="Total"/>
+                        </td>
+                        <td class="dataCell"
+                            style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-button-color: #B4B4B4">
+                            
+                        </td>
+                        <td class="dataCell"
+                            style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-button-color: #B4B4B4">
+                            HKD&nbsp;
+                            <apex:outputField value="{!totalForecast.Q1__c}"/>
+                        </td>
+                        <td class="dataCell"
+                            style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-button-color: #B4B4B4">
+                            HKD&nbsp;
+                            <apex:outputField value="{!totalForecast.Q2__c}"/>
+                        </td>
+                        <td class="dataCell"
+                            style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-button-color: #B4B4B4">
+                            HKD&nbsp;
+                            <apex:outputField value="{!totalForecast.Q3__c}"/>
+                        </td>
+                        <td class="dataCell"
+                            style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-button-color: #B4B4B4">
+                            HKD&nbsp;
+                            <apex:outputField value="{!totalForecast.Q4__c}"/>
+                        </td>
+                        <td class="dataCell"
+                            style="padding-left: 1; padding-right: 0; border-left-color: #B4B4B4; border-top-color: #B4B4B4; border-button-color: #B4B4B4">
+                            
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+        </div>
+    </apex:form>
+</apex:page>
