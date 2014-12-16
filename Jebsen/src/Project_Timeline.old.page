@@ -1,0 +1,68 @@
+<apex:page standardController="Opportunity" showHeader="false" extensions="Project_Timeline_PageController"  id="pv">
+<style type="text/css">
+.dateFormat{display:none}
+.nothidden{
+ width:40px;
+ height:5px;
+} 
+</style>
+<apex:form id="f">
+<div class="pbBody">
+<table>
+<tr>
+<td><apex:commandButton style="{!if(IsEdit==true,'nothidden','display:none')};width:35px;" value="Save" action="{!Hold}" reRender="pv:f:panel"/></td>
+<td><apex:commandButton style="{!if(IsEdit==true,'nothidden','display:none')};width:35px;" value="Add" action="{!Add}" reRender="pv:f:panel"/></td>
+</tr>
+</table>
+<br/>
+<apex:outputPanel id="panel" >
+<table class="list" cellspacing="0" cellpadding="0" border="0" width="100%" style="border: solid thin #B4B4B4">
+<tr class="headerRow"  style="background:#F2F3F3;align:center;">
+<td colspan="5" class="headerRow"  align="center">Project Timeline</td>
+</tr>
+<tr class="headerRow"  style="background:#F2F3F3;align:center;">
+<td class="headerRow"  align="center" style="border-top: solid thin #B4B4B4;">Action</td>
+<td class="headerRow"  align="center" style="border-top: solid thin #B4B4B4;border-left-color:#B4B4B4;border-buttom-color:#B4B4B4"><apex:image value="{!$Resource.RedBar}" height="12px" width="3px"/>&nbsp;Milestones</td>
+<td class="headerRow"  align="center" style="border-top: solid thin #B4B4B4;border-left-color:#B4B4B4;border-buttom-color:#B4B4B4"><apex:image value="{!$Resource.RedBar}" height="12px" width="3px"/>&nbsp;Start Date</td>
+<td class="headerRow"  align="center" style="border-top: solid thin #B4B4B4;border-left-color:#B4B4B4;border-buttom-color:#B4B4B4"><apex:image value="{!$Resource.RedBar}" height="12px" width="3px"/>&nbsp;End Date</td>
+<td class="headerRow"  align="center" style="border-top: solid thin #B4B4B4;border-left-color:#B4B4B4;border-buttom-color:#B4B4B4"><apex:image value="{!$Resource.RedBar}" height="12px" width="3px"/>&nbsp;Remarks</td>
+</tr>
+<apex:repeat value="{!list_Strategies}" var="item">
+<tr>
+<td class="dataCell" style="padding-left:1;padding-right:0;border-top-color:#B4B4B4;border-buttom-color:#B4B4B4;width:6%">
+ <apex:commandLink style="{!if(IsEdit==true,'nothidden','display:none')};" action="{!Upd}" value="Edit" id="Update" reRender="pv:f:panel">
+  <apex:param name="upd"  assignTo="{!Index}" value="{!item.Index}"/>
+ </apex:commandLink>&nbsp;&nbsp;
+<apex:commandLink style="{!if(IsEdit==true,'nothidden','display:none')};" action="{!Del}" value="Delete" id="Delete" reRender="pv:f:panel">
+   <apex:param name="del"  assignTo="{!Index}" value="{!item.Index}"/>
+ </apex:commandLink>
+</td>
+<td class="dataCell" style="padding-left:1;padding-right:0;border-left-color:#B4B4B4;border-top-color:#B4B4B4;border-buttom-color:#B4B4B4;width:20%">
+<apex:outputText value="{!item.Strategie.Milestones__c}" style="{!if(item.IsEdit==true,'display:none','')}"/>
+<apex:selectList value="{!item.Strategie.Milestones__c}" size="1" style="{!if(item.IsEdit==false,'display:none','')};width:99%">
+ <apex:selectOptions value="{!Options}"/>
+</apex:selectList>
+</td>
+<td class="dataCell" style="padding-left:1;padding-right:1;border-left-color:#B4B4B4;border-top-color:#B4B4B4;border-buttom-color:#B4B4B4;width:10%">
+<apex:inputField value="{!item.Strategie.Start_Date__c}" style="{!if(item.IsEdit==true,'nothidden','display:none')};width:85%"/>
+<div style="{!if(item.IsEdit==true,'display:none','nothidden')};width:100%">
+<apex:outputField value="{!item.Strategie.Start_Date__c}"/>
+</div>
+</td>
+<td class="dataCell" style="padding-left:1;padding-right:0;border-left-color:#B4B4B4;border-top-color:#B4B4B4;border-buttom-color:#B4B4B4;width:10%">
+<apex:inputField value="{!item.Strategie.End_Date__c}" style="{!if(item.IsEdit==true,'nothidden','display:none')};width:85%"/>
+<div style="{!if(item.IsEdit==true,'display:none','nothidden')};width:100%">
+<apex:outputField value="{!item.Strategie.End_Date__c}"/>
+</div>
+</td>
+<td class="dataCell" style="padding-left:1;padding-right:0;border-left-color:#B4B4B4;border-top-color:#B4B4B4;border-buttom-color:#B4B4B4width:52%">
+<apex:inputTextarea rows="1" onkeypress="if(this.value.length >164) {return(false);}" value="{!item.Strategie.Remarks__c}" style="overflow-x:hidden;overflow-y:hidden;{!if(item.IsEdit==false,'background:#FFFFFF;border:0px','')};width:95%" readonly="{!if(item.IsEdit==true,false,true)}"/>
+</td>
+
+</tr>
+</apex:repeat>
+</table>
+</apex:outputPanel>
+</div>
+</apex:form>
+</apex:page>
