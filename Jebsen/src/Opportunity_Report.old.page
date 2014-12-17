@@ -1,0 +1,552 @@
+<apex:page renderas="pdf"  controller="Opportunity_ReportController">
+
+<apex:Form >
+<!-- 第一页 -->
+    <apex:stylesheet value="{!$Resource.OppReportStyle}" />
+    <div></div>
+    <div class="title" style="margin-left:280px;margin-top:30px">JAT ACD</div>
+    <div class="title" style="margin-left:150px;margin-top:30px">Sales Management System</div>
+    <div style="margin-left:300px;margin-top:200px;margin-bottom:200px">
+        <apex:image id="logo" value="{!$Resource.Logo}"  width="119" height="164"/>
+    </div>
+    <div class="primaryTitle" style = "margin-left:250px;margin-bottom:50px">Opportunity Report</div>
+    <table class="tabelStyle">
+        <tr>
+            <td class="tabelTd">Opportunity name</td>
+            <td class="tabelTd">{!opp.Name}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Account name</td>
+            <td class="tabelTd">{!opp.Account.Name}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Created by</td>
+            <td class="tabelTd">{!opp.CreatedBy.Name}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Created on</td>
+            <td class="tabelTd">{!CeatedOn}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Last modified on</td>
+            <td class="tabelTd">{!LastModifiedOn}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Owner</td>
+            <td class="tabelTd">{!opp.Owner.Name}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Date of report generation</td>
+            <td class="tabelTd">{!thisDt}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Record link</td>
+            <td class="tabelTd">{!link}</td>
+        </tr>
+    </table>
+    <!-- 第二页 -->
+    <div style="page-break-after:always;"></div>
+    <div class="primaryTitle" style="margin-left:270px;">Basic Information</div>
+    <div class="secondaryTitle">Basic information</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd">Attributes</td>
+            <td class="tabelTd">Value</td>
+            <td class="tabelTd" width="30px" rowspan="7" style="background:#FFF"></td>
+            <td class="tabelTd">Attributes</td>
+            <td class="tabelTd">Value</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Opportunity Number</td>
+            <td class="tabelTd">{!opp.Opportunity_Number__c}</td>
+            <td class="tabelTd">SAP Number</td>
+            <td class="tabelTd">{!opp.SAP_Number__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Type</td>
+            <td class="tabelTd">{!opp.Type}</td>
+            <td class="tabelTd">Current Stage</td>
+            <td class="tabelTd">{!opp.StageName}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Purchase Scope</td>
+            <td class="tabelTd">{!opp.Purchase_scope__c}</td>
+            <td class="tabelTd">Probability</td>
+            <td class="tabelTd">{!opp.Probability}%</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Product Volume</td>
+            <td class="tabelTd">{!ProductVolume}</td>
+            <td class="tabelTd">Amount</td>
+            <td class="tabelTd">{!Amount}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Owner</td>
+            <td class="tabelTd">{!opp.Owner.Name}</td>
+            <td class="tabelTd">Order amount of Last year</td>
+            <td class="tabelTd">{!OrderAmountOfLastYear}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Estimated Close Date</td>
+            <td class="tabelTd">{!CloseDate}</td>
+            <td class="tabelTd">History accumulation</td>
+            <td class="tabelTd">{!HistoryAccumulation}</td>
+        </tr>
+    </table>
+    <div class="secondaryTitle">Sales team</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd">Name</td>
+            <td class="tabelTd">Role in Opp</td>
+            <td class="tabelTd">Title</td>
+            <td class="tabelTd">Department</td>
+            <td class="tabelTd">Cell phone</td>
+        </tr>
+        <apex:repeat value="{!members}" var="m">
+        <tr>
+            <td class="tabelTd" height="18px">{!m.User.Name}</td>
+            <td class="tabelTd">{!m.TeamMemberRole}</td>
+            <td class="tabelTd">{!m.User.Title}</td>
+            <td class="tabelTd">{!m.User.Department}</td>
+            <td class="tabelTd">{!m.User.Phone}</td>
+        </tr>
+        </apex:repeat>
+    </table>
+    <div class="secondaryTitle">Competitor list</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd">Name</td>
+            <td class="tabelTd">Advantage</td>
+            <td class="tabelTd">Disadvantage</td>
+        </tr>
+        <apex:repeat value="{!competitors}" var="c">
+        <tr>
+            <td class="tabelTd" height="54px" width="20%">{!c.CompetitorName}</td>
+            <td class="tabelTd" width="40%">{!c.Strengths}</td>
+            <td class="tabelTd" width="40%">{!c.Weaknesses}</td>
+        </tr>
+        </apex:repeat>
+    </table>
+    <div class="secondaryTitle">Activities list</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd" width="60%">Subject</td>
+            <td class="tabelTd" width="12%">Due date</td>
+            <td class="tabelTd" width="16%">Assigned to</td>
+            <td class="tabelTd" width="12%">status</td>
+        </tr>
+        <apex:repeat value="{!list_Activities}" var="a">
+        <tr>
+            <td class="tabelTd" height="18px">{!a.Subject}</td>
+            <td class="tabelTd">{!a.DueDate}</td>
+            <td class="tabelTd">{!a.Assigned}</td>
+            <td class="tabelTd">{!a.Status}</td>
+        </tr>
+        </apex:repeat>
+    </table>
+    <div class="secondaryTitle">Documentation status</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd">Document type</td>
+            <td class="tabelTd">Uploaded Status</td>
+            <td class="tabelTd" width="30px" rowspan="6" style="background:#FFF"></td>
+            <td class="tabelTd">Document type</td>
+            <td class="tabelTd">Uploaded Status</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Questionnaire</td>
+            <td class="tabelTd">{!if(opp.Questionnaire_has_been_uploaded__c,'Y','N')}</td>
+            <td class="tabelTd">RFQ</td>
+            <td class="tabelTd">{!if(opp.RFQ_has_been_uploaded__c,'Y','N')}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Automated solution</td>
+            <td class="tabelTd">{!if(opp.Automated_solution_has_been_uploaded__c,'Y','N')}</td>
+            <td class="tabelTd">Overall solution</td>
+            <td class="tabelTd">{!if(opp.Overall_solution_has_been_uploaded__c,'Y','N')}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Quotation to Jebsen</td>
+            <td class="tabelTd">{!if(opp.Quotation_to_Jebsen_has_been_uploaded__c,'Y','N')}</td>
+            <td class="tabelTd">Quotation to customer</td>
+            <td class="tabelTd">{!if(opp.Quotation_to_customer_has_been_uploaded__c,'Y','N')}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Samples demand plan</td>
+            <td class="tabelTd">{!if(opp.Samples_demand_plan_has_been_uploaded__c,'Y','N')}</td>
+            <td class="tabelTd">Samples Purchase Order</td>
+            <td class="tabelTd">{!if(opp.Samples_Purchase_Order_has_been_uploaded__c,'Y','N')}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd">Frame contract</td>
+            <td class="tabelTd">{!if(opp.Frame_contract_has_been_uploaded__c,'Y','N')}</td>
+            <td class="tabelTd">PO to Profil</td>
+            <td class="tabelTd">{!if(opp.PO_to_Profil_has_been_uploaded__c,'Y','N')}</td>
+        </tr>
+    </table>
+    <!-- 第三页 -->
+<!--    <div style="margin-top:50px"></div>-->
+    <div style="page-break-after:always;"></div>
+    <div class="primaryTitle" style="margin-left:200px;">AON(Awareness of Needs)</div>
+    
+    <div class="secondaryTitle">Basic information</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd">Customer Requirements Description</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" height="60px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {!opp.Customer_Requirements_Description__c}
+            </td>
+        </tr>
+    </table>
+    <div class="secondaryTitle">Contact role</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd">Name</td>
+            <td class="tabelTd">Role type</td>
+            <td class="tabelTd">Title</td>
+            <td class="tabelTd">Most focus on</td>
+            <td class="tabelTd">Tendency</td>
+        </tr>
+        <apex:repeat value="{!list_ContactRole}" var="c">
+            <tr>
+                <td class="tabelTd" height="18px">{!c.Contact__r.Name}</td>
+                <td class="tabelTd">{!c.Role_Type__c}</td>
+                <td class="tabelTd">{!c.Contact_title__c}</td>
+                <td class="tabelTd">{!c.Most_Focus_on__c}</td>
+                <td class="tabelTd">{!c.Tendency_Description__c}</td>
+            </tr>
+        </apex:repeat>
+    </table>
+    
+    <div class="secondaryTitle">Value proposal</div>
+    <table class="tabelStyle">
+        <tr>
+            <td class="tabelTd" width = "20%" Height="40px">Capabilities:</td>
+            <td class="tabelTd">{!opp.Capabilities__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Impact in Year 1:</td>
+            <td class="tabelTd">{!opp.Impact_in_Year_1__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Individual:</td>
+            <td class="tabelTd">{!opp.Individual__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Political:</td>
+            <td class="tabelTd">{!opp.Political__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Strategic:</td>
+            <td class="tabelTd">{!opp.Strategic__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Tactical:</td>
+            <td class="tabelTd">{!opp.Tactical__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Total impact in USD/EUR/RMB</td>
+            <td class="tabelTd">{!opp.Total_Impact_in_USD_EUR_RMB__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Solution Implementation Costs</td>
+            <td class="tabelTd">{!opp.Solution_Implementation_Costs__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Time:</td>
+            <td class="tabelTd">{!opp.Time__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Effort:</td>
+            <td class="tabelTd">{!opp.Effort__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Investment:</td>
+            <td class="tabelTd">{!opp.Investment__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Total Implementation Cost</td>
+            <td class="tabelTd">{!opp.Total_Implementation_Cost__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Value Created by Solution in Year 1</td>
+            <td class="tabelTd">{!opp.Value_Created_by_Solution_in_Year_1__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" Height="40px">Proposed Price of Solution</td>
+            <td class="tabelTd">{!opp.Proposed_Price_of_Solution__c}</td>
+        </tr>
+    </table>
+    <!-- 第四页 -->
+    <div style="page-break-after:always;"></div>
+    <div class="primaryTitle" style="margin-left:200px;">AOA(Assessment of Alternative)</div>
+    <!-- Chart Start -->
+    <div class="secondaryTitle">Value Strategies Chart</div>
+    <table width="100%"  align="center" cellpadding="0" cellspacing="0" class="table2" style="padding:0px;margin-top:0px;">
+        <tr>
+            <td class="ChartBigText" style="font-weight:bold;">Importance<br/>To Customer</td>
+            <td valign="bottom" align="center" style=" margin:0px;">
+                <apex:image id="Up_Arrow" value="{!$Resource.Up_Arrow_New}" style="height:120px;width:28px;" />
+            </td>
+            <td  colspan="3" style="height:111px" align="center">
+                <apex:image id="GreenStar" value="{!$Resource.GreenStar}" styleClass="imageSize1"/>
+                <span class="ChartBigText">Value Winner</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <apex:image id="RedStar" value="{!$Resource.RedStar}" styleClass="imageSize1"/>
+                <span class="ChartBigText">Value Killer</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <apex:image id="YellowStar" value="{!$Resource.YellowStar}" styleClass="imageSize1"/>
+                <span class="ChartBigText">Value Sleeper</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <apex:image id="GrayStar" value="{!$Resource.GrayStar}" styleClass="imageSize1"/>
+                <span class="ChartBigText">Others</span>
+            </td>
+        </tr>
+        <apex:repeat value="{!list_Value_Strategies}" var="lvs" rows="1">
+            <tr>
+                <td align="right"  class="ChartBigText" style="font-weight:bold;">{!lvs.Y_Value}</td>
+                <td rowspan="4" valign="top" align="center" style="margin:0px;"> 
+                    <apex:image id="Endway_New" value="{!$Resource.Endway_New}" height="468px" width="28"/>
+                </td>
+                <apex:repeat value="{!lvs.list_Strategies}" var="hs" rows="1">
+                    <td class="td2" valign="top" style=" width:206px;height:152px;border:solid black; border-width:1px 1px 1px 1px;margin:0px;">
+                        <apex:repeat value="{!hs.list_Winner}" var="h">
+                            <apex:image id="GreenStar" value="{!$Resource.GreenStar}" styleClass="imageSize2"/>{!h.Value_Criteria__c}<br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Killer}" var="k">
+                            <apex:image id="RedStar" value="{!$Resource.RedStar}" styleClass="imageSize2"/>{!k.Value_Criteria__c}<br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Sleeper}" var="s">
+                            <apex:image id="YellowStar" value="{!$Resource.YellowStar}" styleClass="imageSize2"/>{!s.Value_Criteria__c}<br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Others}" var="o">
+                            <apex:image id="GrayStar" value="{!$Resource.GrayStar}" styleClass="imageSize2"/>{!o.Value_Criteria__c}<br/>
+                        </apex:repeat>
+                    </td>
+                </apex:repeat>
+                <apex:repeat value="{!lvs.list_Strategies}" var="hs" first="1">
+                    <td class="td2" valign="top" style=" width:206px;height:152px;border:solid black; border-width:1px 1px 1px 0px;margin:0px;">
+                        <apex:repeat value="{!hs.list_Winner}" var="h">
+                            <apex:image id="GreenStar" value="{!$Resource.GreenStar}" styleClass="imageSize2"/>{!h.Value_Criteria__c}<br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Killer}" var="k">
+                            <apex:image id="RedStar" value="{!$Resource.RedStar}" styleClass="imageSize2"/>{!k.Value_Criteria__c}<br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Sleeper}" var="s">
+                            <apex:image id="YellowStar" value="{!$Resource.YellowStar}" styleClass="imageSize2"/>{!s.Value_Criteria__c}
+                            <br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Others}" var="o">
+                            <apex:image id="GrayStar" value="{!$Resource.GrayStar}"  styleClass="imageSize2"/>{!o.Value_Criteria__c}
+                            <br/>
+                        </apex:repeat>
+                    </td>
+                </apex:repeat>
+            </tr>
+        </apex:repeat>
+
+        <apex:repeat value="{!list_Value_Strategies}" var="lvs" first="1">
+            <tr>
+                <td align="right"  class="ChartBigText" style="font-weight:bold;">{!lvs.Y_Value}</td>
+                <apex:repeat value="{!lvs.list_Strategies}" var="hs" rows="1">
+                    <td class="td2" valign="top" style=" width:206px;height:152px;border:solid black; border-width:0px 1px 1px 1px;">
+                        <apex:repeat value="{!hs.list_Winner}" var="h">
+                            <apex:image id="GreenStar" value="{!$Resource.GreenStar}" styleClass="imageSize2"/>{!h.Value_Criteria__c}
+                            <br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Killer}" var="k">
+                            <apex:image id="RedStar" value="{!$Resource.RedStar}" styleClass="imageSize2"/>{!k.Value_Criteria__c}
+                            <br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Sleeper}" var="s">
+                            <apex:image id="YellowStar" value="{!$Resource.YellowStar}" styleClass="imageSize2"/>{!s.Value_Criteria__c}
+                            <br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Others}" var="o">
+                            <apex:image id="GrayStar" value="{!$Resource.GrayStar}" styleClass="imageSize2"/>{!o.Value_Criteria__c}
+                            <br/>
+                        </apex:repeat>
+                    </td>
+                </apex:repeat>
+                <apex:repeat value="{!lvs.list_Strategies}" var="hs" first="1">
+                    <td class="td2" valign="top" style=" width:206px;height:152px;border:solid black; border-width:0px 1px 1px 0px;">
+                        <apex:repeat value="{!hs.list_Winner}" var="h">
+                            <apex:image id="GreenStar" value="{!$Resource.GreenStar}" styleClass="imageSize2"/>{!h.Value_Criteria__c}
+                            <br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Killer}" var="k">
+                            <apex:image id="RedStar" value="{!$Resource.RedStar}" styleClass="imageSize2"/>{!k.Value_Criteria__c}
+                            <br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Sleeper}" var="s">
+                            <apex:image id="YellowStar" value="{!$Resource.YellowStar}" styleClass="imageSize2"/>{!s.Value_Criteria__c}
+                            <br/>
+                        </apex:repeat>
+                        <apex:repeat value="{!hs.list_Others}" var="o">
+                            <apex:image id="GrayStar" value="{!$Resource.GrayStar}" styleClass="imageSize2"/>{!o.Value_Criteria__c}
+                            <br/>
+                        </apex:repeat>
+                    </td>
+                </apex:repeat>
+            </tr>
+        </apex:repeat>
+        <tr valign="top">
+            <td></td>
+            <td colspan="5" valign="top" >
+                <apex:image id="Right_Arrow" value="{!$Resource.Right_Arrow}" style="width:600px;height:20px;"/>
+            </td>
+        </tr>
+        <tr valign="top">
+            <td></td>
+            <td></td>
+            <td align="center" class="ChartBigText" style="font-weight:bold;">L</td>
+            <td align="center" class="ChartBigText" style="font-weight:bold;">M</td>
+            <td align="center" class="ChartBigText" style="font-weight:bold;">H</td>
+            <td align="center" class="ChartBigText" style="font-weight:bold;">Competitive<br/>Standing</td>
+        </tr>
+    </table>
+    
+    <!-- Chart End -->
+    <div class="secondaryTitle">Value Strategies</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd" width="30%" colspan="2">Value Criteria</td>
+            <td class="tabelTd" width="15%" rowspan="2">Importance to Customer (H M L)</td>
+            <td class="tabelTd" width="15%" rowspan="2">Competitive Standing (H M L)</td>
+            <td class="tabelTd" width="40%" rowspan="2">Action Plan</td>
+        </tr>
+        <tr class="tabelHeader">
+            <td class="tabelTd" width="15%">Options</td>
+            <td class="tabelTd" width="15%">Criteria</td>
+        </tr>
+        <apex:repeat value="{!list_valueStrategies}" var="v">
+            <tr>
+                <td class="tabelTd">{!v.Value_Options__c}</td> 
+                <td class="tabelTd">{!v.Value_Criteria__c}</td>
+                <td class="tabelTd">{!v.Importance_to_Customer__c}</td>
+                <td class="tabelTd">{!v.Competitive_Standing__c}</td>
+                <td class="tabelTd">{!v.Action_Plan__c}</td>
+            </tr>
+        </apex:repeat>
+    </table>
+    <!-- 第五页 -->
+    <div style="page-break-after:always;"></div>
+    <div class="primaryTitle" style="margin-left:200px;">AOR(Alleviation of Risk)</div>
+    <div class="secondaryTitle">Risk Tracker</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd" width="11%">Risk Type</td>
+            <td class="tabelTd" width="17%">What risks or uncertainties are there?</td>
+            <td class="tabelTd" width="35%">How can you reduce the chance of risk? (Prevention – Plan A)</td>
+            <td class="tabelTd" width="35%">What can you do now to reduce impact if the risk materializes? (Cure – Plan B)</td>
+        </tr>
+        <apex:repeat value="{!list_RiskTracker}" var="r">
+        <tr>
+            <td class="tabelTd" rowspan="2">{!r.riskType}</td> 
+            <td class="tabelTd" height="200px">{!r.Rick_Tracker_1.What_risks_or_uncertainties_are_there__c}</td>
+            <td class="tabelTd">{!r.Rick_Tracker_1.Prevention_Plan_A__c}</td>
+            <td class="tabelTd">{!r.Rick_Tracker_1.Cure_Plan_B__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" height="200px">{!r.Rick_Tracker_2.What_risks_or_uncertainties_are_there__c}</td>
+            <td class="tabelTd">{!r.Rick_Tracker_2.Prevention_Plan_A__c}</td>
+            <td class="tabelTd">{!r.Rick_Tracker_2.Cure_Plan_B__c}</td>
+        </tr>
+        </apex:repeat>
+    </table>
+    <!-- 第六页 -->
+    <div style="page-break-after:always;"></div>
+    <div class="primaryTitle" style="margin-left:290px;">Decision</div>
+    <div class="secondaryTitle">Reason</div>
+    <table class="tabelStyle">
+        <tr>
+            <td class="tabelTd" width="60%">Result</td>
+            <td class="tabelTd" width="40%">{!opp.Decision_Result__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" width="60%">Lost Type</td>
+            <td class="tabelTd" width="40%">{!opp.Decision_Lost_Type__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" width="60%">Competitor Name</td>
+            <td class="tabelTd" width="40%">{!opp.Decision_Competitor__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" width="60%">Main reason for winning or losing</td>
+            <td class="tabelTd" width="40%">{!opp.Main_reason_for_winning_or_losing__c}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" colspan="2">Other reason for winning or losing</td> 
+        </tr>
+        <tr>
+            <td class="tabelTd" colspan="2" height="80px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {!opp.Other_reason_for_winning_or_losing__c}</td>
+        </tr>
+    </table>
+    
+    <div class="primaryTitle" style="margin-left:280px;">Achievement</div>
+    <div class="secondaryTitle">Final information</div>
+    <table class="tabelStyle">
+        <tr>
+            <td class="tabelTd" width="40%">Actual Volume</td>
+            <td class="tabelTd" width="60%">{!ActualVolume}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" width="40%">Actual Amount</td>
+            <td class="tabelTd" width="60%">{!ActualAmount}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" width="40%">Actual Close Date</td>
+            <td class="tabelTd" width="60%">{!ActualCloseDate}</td>
+        </tr>
+        <tr>
+            <td class="tabelTd" colspan="2">Summary and Experience</td> 
+        </tr>
+        <tr>
+            <td class="tabelTd" colspan="2" height="80px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {!opp.Summary_and_Experience__c}</td>
+        </tr>
+    </table>
+    
+    <div class="secondaryTitle">Implementation plan</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd" width = "15%">Plan type</td>
+            <td class="tabelTd" width = "30%">Action</td>
+            <td class="tabelTd" width = "20%">Responsible person</td>
+            <td class="tabelTd" width = "20%">Feedback</td>
+            <td class="tabelTd" width = "15%">Due Date</td>
+        </tr>
+        <apex:repeat value="{!list_Imlpementation_Plan}" var="i">
+            <tr>
+                <td class="tabelTd">{!i.Type__c}</td>
+                <td class="tabelTd">{!i.Action__c}</td>
+                <td class="tabelTd">{!i.Resposible_Person__r.Name}</td>
+                <td class="tabelTd">{!i.Feedback__c}</td>
+                <td class="tabelTd" style="height:40px"><apex:outputfield value="{!i.Due_Date__c}" /></td>
+            </tr>
+        </apex:repeat>
+    </table>
+<!--    <div style="margin-top:100px"></div>-->
+    <div style="page-break-after:always;"></div>
+    <div class="primaryTitle" style="margin-left:260px;margin-bottom:30px">Sales process history</div>
+    <table class="tabelStyle">
+        <tr class="tabelHeader">
+            <td class="tabelTd" align="center" width = "25%">Stage</td>
+            <td class="tabelTd" align="center" width = "25%">Amount</td>
+            <td class="tabelTd" align="center" width = "25%">Probability</td>
+            <td class="tabelTd" align="center" width = "25%">Modify on</td>
+        </tr>
+        <apex:repeat value="{!list_OpportunityHistories}" var="o">
+            <tr>
+                <td class="tabelTd" height="18px">{!o.Stage}</td>
+                <td class="tabelTd" align="center">{!o.Amount}</td>
+                <td class="tabelTd" align="center">{!o.Probability}</td>
+                <td class="tabelTd" align="center">{!o.ModifyOn}</td>
+            </tr>
+        </apex:repeat>
+    </table>
+</apex:form>
+</apex:page>
