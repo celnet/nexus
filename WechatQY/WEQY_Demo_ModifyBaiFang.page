@@ -1,0 +1,97 @@
+<apex:page id="page" applyHtmlTag="false" applyBodyTag="false" standardStylesheets="false" showHeader="false" sidebar="false" controller="WEQY_Demo_ModifyBaiFang">
+	<head>
+		<title>拜访编辑</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv='cache-control' content='no-cache' />
+		<meta http-equiv='expires' content='0' />
+		<meta http-equiv='pragma' content='no-cache' />
+		
+		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.css" />
+		
+		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script src="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.js"></script>
+		<script type="text/javascript">
+			var visitdata = {"apexType":"c.WEQY_Demo_ModifyBaiFang.viInfo"};
+			var vid = "{!viId}";
+			
+			$j = jQuery.noConflict();
+			Visualforce.remoting.timeout = 120000;
+			
+			function save(){
+				visitdata.dv = {};
+				visitdata.dv.Id = vid;
+				visitdata.vid = vid;
+				visitdata.dv.Price__c = $j('#price').val();
+				//visitdata.dv.Item__c = document.getElementById("page:sf:sku-button").firstChild.innerHTML;
+				visitdata.dv.Item__c = document.getElementById("page:sf:sku").value;
+				//alert(document.getElementById("page:sf:visit").value);
+				visitdata.dv.VisitPlan__c = document.getElementById("page:sf:visit").value;
+								
+				WEQY_Demo_ModifyBaiFang.saveVisit(visitdata, function(result,event){
+					if(event.status){
+						//alert(result);
+						window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_Demo_BaiFangDetail?id=" + result+"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}');
+					} else {
+						alert(event.message);
+						alert('Visualforce Remoting Failed.');
+					}
+				});
+			}
+			
+			function cancel(){
+				if(vid != ''){
+					window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_Demo_BaiFangDetail?id=" + vid+"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}');
+				} else {
+					window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_Demo_BaiFang?id="+'{!vpid}'+"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}');
+				}
+			}
+			
+			function refresh(){
+				document.location.reload(true);
+			}
+		</script>
+	</head>
+	<body>
+		<div data-role="page" id="pageone">
+	
+		<div data-role="main" class="ui-content">
+		
+		<apex:form id="sf">
+		<div class="ui-field-contain">
+		<label for="name">价格</label>
+		<input id="price" name="text" type="text" value="{!dv.Price__c}" />
+		</div>
+		
+		<div class="ui-field-contain">
+		<label for="sku">sku</label>
+		<!-- <select id="sku" name="sku">
+		
+		    <option value="==请选择==" selected="selected">==请选择==</option>
+			<option value="奥利奥牛奶饼干" >奥利奥牛奶饼干</option>
+			<option value="奥利奥巧克力饼干" >奥利奥巧克力饼干</option>
+			<option value="达能饼干" >达能饼干</option>
+		</select> -->
+		<apex:selectList id="sku" value="{!dv.Item__c}" size="1">
+			  <apex:selectOption itemValue="" itemLabel="-- 请选择 --" />
+			  <apex:selectOption itemValue="奥利奥牛奶饼干" itemLabel="奥利奥牛奶饼干" />
+			  <apex:selectOption itemValue="奥利奥巧克力饼干" itemLabel="奥利奥巧克力饼干" />
+			  <apex:selectOption itemValue="达能饼干" itemLabel="达能饼干" />
+         </apex:selectList>
+		</div>
+		
+		<div class="ui-field-contain">
+		<label for="visit">拜访计划</label>
+		<apex:selectList id="visit" value="{!dv.VisitPlan__c}" size="1">
+			<apex:selectOptions value="{!items}"/>
+		</apex:selectList>
+		</div>
+		
+		<span onclick="save();" class="ui-btn ui-btn-inline ui-corner-all" >保存</span>
+		<a href="javascript:cancel();" class="ui-btn ui-btn-inline ui-corner-all" >取消</a>
+		<a href="javascript:refresh();" class="ui-btn ui-btn-inline ui-corner-all" >刷新</a>
+		</apex:form>
+		
+		</div>
+		</div>
+	</body>
+</apex:page>
