@@ -1,0 +1,50 @@
+<apex:page applyHtmlTag="false" controller="WEQY_Demo_XunDianController" docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="false">
+<html>
+<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv='cache-control' content='no-cache' />
+		<meta http-equiv='expires' content='0' />
+		<meta http-equiv='pragma' content='no-cache' />
+		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.css" />
+		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script src="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.js"></script>
+</head>
+<style>
+	li{font-family: '微软雅黑';}
+</style>
+<script>
+	function click(id)
+	{
+		window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_XunDianDetail?id=" + id +"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}');
+	}
+</script>
+<body>
+<apex:form >
+<div data-role="page" id="pageone" style="{!isShow}">
+	 <div data-role="header" style="background:#3388CC;color:#FFF;margin-top:-1px;">
+    	<h1>拜访计划</h1>
+ 	 </div>
+  <div data-role="content">
+ 	 <apex:repeat value="{!vpList}" var="vp" >
+    <ul data-role="listview" data-inset="true">
+      <li ><a href="javascript:click('{!vp.Id}');">{!vp.Name}  &nbsp;&nbsp;<span class="ui-li-count" style="{!bfColorShow}">{!bfState}</span></a>   </li>
+      <li>拜访时间：<apex:outputText value="{0,date,yyyy-MM-dd}">
+                   			<apex:param value="{!vp.VisitDate__c}"/>
+                   </apex:outputText>
+       </li>
+    </ul>
+    </apex:repeat>
+  </div>
+</div> 
+
+
+<div data-role="page" id="pageone" style="{!isShowOther}">
+	 <div data-role="header" style="background:#3388CC;color:#FFF;margin-top:-22px;">
+    	<h1>您好,您还没有绑定企业号。</h1>
+ 	 </div>
+  </div>
+</apex:form>
+</body>
+</html>
+
+</apex:page>
