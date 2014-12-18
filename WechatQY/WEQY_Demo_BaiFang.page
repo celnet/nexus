@@ -1,0 +1,62 @@
+<apex:page applyHtmlTag="false" controller="WEQY_Demo_BaiFangController" showHeader="false" sidebar="false" standardStylesheets="false">
+<html>
+<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv='cache-control' content='no-cache' />
+		<meta http-equiv='expires' content='0' />
+		<meta http-equiv='pragma' content='no-cache' />
+		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.css" />
+		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script src="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.js"></script>
+</head>
+<script>
+	function click(id)
+	{
+		window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_Demo_BaiFangDetail?id=" + id+"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}'
+		);
+	}
+	function Before()
+	{
+		window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_XunDianDetail?id=" + '{!vpId}'+"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}');
+	}
+	function addBaiFang(){
+		window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_Demo_ModifyBaiFang?vpid="+'{!vpId}'+"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}'
+		);
+	}
+	function refresh(){
+				document.location.reload(true);
+			}
+</script>
+<body>
+	<apex:form >
+<div data-role="page" id="pageone">
+<div data-role="header" style="background:#3388CC;color:#FFF;margin-top:-1px;">
+    	<h1>
+         <span>{!vp.Store__r.Name}</span><br/>
+         <span>
+	    	<apex:outputText value="{0,date,yyyy-MM-dd}">
+	                <apex:param value="{!vp.VisitDate__c}"/>
+	        </apex:outputText>
+         </span>
+         </h1>
+ 	 </div>
+  <div data-role="content">
+ 	 <apex:repeat value="{!viList}" var="vi" >
+    <ul data-role="listview" data-inset="true">
+      <li ><a href="javascript:click('{!vi.Id}');">{!vi.Name}</a>   </li>
+      <li>SKU：{!vi.Item__c}</li>
+      <li>价格：{!vi.Price__c}</li>
+    </ul>
+    </apex:repeat>
+    <div style="text-align:center;">
+	  <a href="javascript:addBaiFang();" data-role="button" data-inline="true">添加</a>
+	  <a href="javascript:Before();" data-role="button" data-inline="true">返回</a>
+	  <a href="javascript:refresh();" class="ui-btn ui-btn-inline ui-corner-all" >刷新</a>
+  </div>
+  </div>
+</div> 
+
+</apex:form>
+</body>
+</html>
+</apex:page>
