@@ -1,0 +1,281 @@
+<apex:page applyHtmlTag="false" controller="WEQY_Demo2_VisitEditorController" showHeader="false" sidebar="false" standardStylesheets="false">
+<html>
+<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv='cache-control' content='no-cache' />
+		<meta http-equiv='expires' content='0' />
+		<meta http-equiv='pragma' content='no-cache' />
+		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.css" />
+		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script src="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.js"></script>
+</head>
+<script type="text/javascript">
+	var visitdata = {"apexType":"Welink.WEQY_Demo2_VisitViewerController.vpw"};
+	var vid = "{!vpId}";
+	var account_lat = "{!vp.Event_Geocode__Latitude__s}";
+	var account_lng = "{!vp.Event_Geocode__Longitude__s}";
+	
+	var visit_lat;
+	var visit_lng;
+	
+	var fieldsets = '{!displayFields}';
+	fieldsets = fieldsets.substring(1,fieldsets.length - 1);
+	var fieldsets_array = fieldsets.split(',');
+	
+	Visualforce.remoting.timeout = 120000;
+	
+	function refresh(){
+		alert(fieldsets_array.length);
+		document.location.reload(true);
+	}
+	
+	function back()
+	{
+		window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_Demo2_VisitList?id="+ '{!vpId}'+"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}');
+	}
+	
+	function modify()
+	{
+		if($('#modify').html()=='编辑')
+		{
+			editnote();
+		} 
+		else if($('#modify').html()=='拜访完成') 
+		{
+			savenote();
+		}
+	}
+	
+	// 替换读取的元素为可编辑的元素
+	function replaceelement(read_id, read_content){
+		var edit_id = read_id.replace('READ', 'EDIT');
+		
+		if(read_content == undefined)
+		read_content = '';
+		
+		var element_edit = '<textarea name="';
+		element_edit += edit_id;
+		element_edit += '" id="';
+		element_edit += edit_id;
+		element_edit += '" class="ui-input-text ui-shadow-inset ui-body-inherit ui-corner-all ui-textinput-autogrow" style="resize:none;">';
+		element_edit += read_content;
+		element_edit += '</textarea>';
+		
+		$('#' + read_id).replaceWith(element_edit);
+	}
+	
+	function editnote()
+	{
+		for (var i=0;i<fieldsets_array.length;i++){
+			var input_element_id = fieldsets_array[i].trim() + '_READ';
+			alert(input_element_id);
+		    var field_read = $('#' + input_element_id).html();
+		    replaceelement(input_element_id, field_read);
+		}
+		
+		//var visitsum_read = $('#VistSum__c_READ').html();
+		//replaceelement('VisitSum__c_READ', visitsum_read);
+		
+		//var remark_read = $('#Remark__c_READ').html();
+		//replaceelement('Remark__c_READ', remark_read);
+		
+		//var plan_read = $('#Plan__c_READ').html();
+		//replaceelement('Plan__c_READ', plan_read);
+		
+		//var executeresult_read = $('#ExecuteResult__c_READ').html();
+		//replaceelement('ExecuteResult__c_READ', executeresult_read);
+		
+		//var customerfeedback_read = $('#CustomerFeedback__c_READ').html();
+		//replaceelement('CustomerFeedback__c_READ', customerfeedback_read);
+		
+		//var needsupport_read = $('#NeedSupport__c_READ').html();
+		//replaceelement('NeedSupport__c_READ', needsupport_read);
+		
+		$('#modify').html('拜访完成');
+	}
+	
+	function replaceEditByReadElement(edit_id, edit_content){
+		var read_id = edit_id.replace('EDIT', 'READ');
+		
+		if(edit_content == undefined)
+		edit_content = '';
+		
+		var element_read = '<span id="';
+		element_read += read_id;
+		element_read += '" >';
+		element_read += edit_content;
+		element_read += '</span>';
+				
+		$('#' + edit_id).replaceWith(element_read);
+	}
+	
+	function savenote()
+	{
+		visitdata.vpc = {};
+		visitdata.vpc.Id = vid;
+		visitdata.vId = vid;
+		
+		for (var i=0;i<fieldsets_array.length;i++){
+		alert(fieldsets_array[i]);
+			visitdata.vpc[fieldsets_array[i].trim()] = $('#' + fieldsets_array[i].trim() + '_EDIT').val();
+			//var input_element_id = fieldsets_array[i].trim() + '_READ';
+			//alert(input_element_id);
+		    //var field_read = $('#' + input_element_id).html();
+		    //replaceelement(input_element_id, field_read);
+		}
+		
+		
+		//visitdata.vpc['Welink__VisitSum__c'] = $('#VisitSum__c_EDIT').val();
+		//visitdata.vpc['Welink__Remark__c'] = $('#Remark__c_EDIT').val();
+		//visitdata.vpc['Welink__Plan__c'] = $('#Plan__c_EDIT').val();
+		//visitdata.vpc['Welink__ExecuteResult__c'] = $('#ExecuteResult__c_EDIT').val();
+		//visitdata.vpc['Welink__CustomerFeedback__c'] = $('#CustomerFeedback__c_EDIT').val();
+		//visitdata.vpc['Welink__NeedSupport__c'] = $('#NeedSupport__c_EDIT').val();
+		
+		visitdata.vpc['Welink__Actual_Visit_Geocode__Latitude__s'] = visit_lat;
+		visitdata.vpc['Welink__Actual_Visit_Geocode__Longitude__s'] = visit_lng;
+		
+		// 拜访完成后标记拜访完成
+		visitdata.vpc['Welink__IsVisited_UserClick__c'] = true;
+		
+		Welink.WEQY_Demo2_VisitEditorController.saveNote(visitdata, function(result,event){
+			if(event.status){
+				// replaceEditByReadElement('VisitSum__c_EDIT', result['Welink__VisitSum__c']);
+				// replaceEditByReadElement('Remark__c_EDIT', result['Welink__Remark__c']);
+				// replaceEditByReadElement('Plan__c_EDIT', result['Welink__Plan__c']);
+				// replaceEditByReadElement('ExecuteResult__c_EDIT', result['Welink__ExecuteResult__c']);
+				// replaceEditByReadElement('CustomerFeedback__c_EDIT', result['Welink__CustomerFeedback__c']);
+				// replaceEditByReadElement('NeedSupport__c_EDIT', result['Welink__NeedSupport__c']);
+				
+				// $('#modify').html('编辑');
+				back();
+			} else {
+				alert(event.message);
+				alert('Visualforce Remoting Failed.');
+			}
+		});
+	}
+</script>
+
+
+<script type="text/javascript" src="http://api.map.baidu.com/api?type=quick&ak=jYQvKH2OEIgkGAZV6ffNOU7r&v=1.0"></script>
+
+<script>
+function getLocation()
+{
+	editnote();
+	
+  if(navigator.geolocation)
+  {
+  	navigator.geolocation.getCurrentPosition(showPosition,showError);
+  } 
+  else
+  {
+  	document.getElementById('allmap').innerHTML="Geolocation is not supported by this browser.";
+  }
+}
+
+function showPosition(position)
+{
+  visit_lat=position.coords.latitude;
+  visit_lng=position.coords.longitude;
+  
+  showBaiduMap(visit_lat, visit_lng, account_lat, account_lng);
+}
+
+function showBaiduMap(visit_lat, visit_lng, event_lat, event_lng)
+{
+	var allmap = document.getElementById('allmap');
+    allmap.style.height='200px';
+    allmap.style.width='100%';
+
+  	var map = new BMap.Map("allmap");            // 创建Map实例
+	var visit_point = new BMap.Point(visit_lng, visit_lat); // 创建点坐标
+	var event_point = new BMap.Point(event_lng, event_lat);
+	map.centerAndZoom(event_point,15);                 // 初始化地图,设置中心点坐标和地图级别。
+	map.addControl(new BMap.ZoomControl());      //添加地图缩放控件
+	
+	var visit_marker = new BMap.Marker(new BMap.Point(visit_lng, visit_lat));  //创建标注
+	var event_marker = new BMap.Marker(new BMap.Point(event_lng, event_lat));
+	map.addOverlay(visit_marker);
+	map.addOverlay(event_marker);   
+}
+
+function showError(error)
+  {
+  switch(error.code) 
+    {
+    case error.PERMISSION_DENIED:
+      document.getElementById('allmap').innerHTML="User denied the request for Geolocation."
+      break;
+    case error.POSITION_UNAVAILABLE:
+      document.getElementById('allmap').innerHTML="Location information is unavailable."
+      break;
+    case error.TIMEOUT:
+      document.getElementById('allmap').innerHTML="The request to get user location timed out."
+      break;
+    case error.UNKNOWN_ERROR:
+      document.getElementById('allmap').innerHTML="An unknown error occurred."
+      break;
+    }
+  }
+</script>
+
+<body onload="getLocation();" >
+<apex:form >
+	<div data-role="page" id="pageone">
+	  <div data-role="header" style="background:#3388CC;color:#FFF;margin-top:-1px;">
+	    <h1>{!vp.Subject}</h1>
+	  </div>
+		<div id="allmap"></div>
+	  <div data-role="content">
+		    
+		    <ul data-role="listview" data-inset="true">
+		      <li>拜访时间：<apex:outputText value="{0,date,yyyy-MM-dd}">
+                   			<apex:param value="{!vp.ActivityDate}"/>
+                   </apex:outputText>
+      		 </li>
+      		 <li>拜访地址：{!vp.Location}</li>
+      		  <apex:repeat value="{!fsmList}" var="fsm">
+      		 	<li>
+	      		 	<span id="{!fsm.fieldPath}_LABEL">{!fsm.Label}:</span>
+	      		 	<span id="{!fsm.fieldPath}_READ">{!vp[fsm.fieldPath]}</span>
+				</li>
+      		 </apex:repeat>
+      		 <!-- <li>
+      		 	<span id="VisitSum__c_LABEL">拜访总结:</span>
+      		 	<span id="VisitSum__c_READ">{!vp.VisitSum__c}</span>
+			</li>
+			<li>
+      		 	<span id="Remark__c_LABEL">备注:</span>
+      		 	<span id="Remark__c_READ">{!vp.Remark__c}</span>
+			</li>
+			<li>
+      		 	<span id="Plan__c_LABEL">计划:</span>
+      		 	<span id="Plan__c_READ">{!vp.Plan__c}</span>
+			</li>
+			<li>
+      		 	<span id="ExecuteResult__c_LABEL">结果分析:</span>
+      		 	<span id="ExecuteResult__c_READ">{!vp.ExecuteResult__c}</span>
+			</li>
+			<li>
+      		 	<span id="CustomerFeedback__c_LABEL">客户反馈:</span>
+      		 	<span id="CustomerFeedback__c_READ">{!vp.CustomerFeedback__c}</span>
+			</li>
+			<li>
+      		 	<span id="NeedSupport__c_LABEL">所需支持:</span>
+      		 	<span id="NeedSupport__c_READ">{!vp.NeedSupport__c}</span>
+			</li>-->
+		    </ul>
+		    
+			    <div style="text-align:center;">
+			    <a href="javascript:modify();" data-role="button" data-inline="true" id="modify">编辑</a>
+			    
+	  			<a href="javascript:refresh();" data-role="button" data-inline="true">刷新</a>
+		  	  </div>
+		  </div>
+  	  </div>
+  </apex:form>
+</body>
+</html>
+</apex:page>
