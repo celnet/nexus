@@ -1,0 +1,169 @@
+<apex:page applyHtmlTag="false" controller="WEQY_XunDianDetailController" showHeader="false" sidebar="false" standardStylesheets="false">
+<html>
+<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv='cache-control' content='no-cache' />
+		<meta http-equiv='expires' content='0' />
+		<meta http-equiv='pragma' content='no-cache' />
+		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.css" />
+		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script src="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.js"></script>
+</head>
+<script type="text/javascript">
+	var visitdata = {"apexType":"c.WEQY_XunDianDetailController.vpw"};
+	var vid = "{!vpId}";
+	var account_lat = "{!vp.Store__r.Demo_Geocode__Latitude__s}";
+	var account_lng = "{!vp.Store__r.Demo_Geocode__Longitude__s}";
+	
+	Visualforce.remoting.timeout = 120000;
+	
+	function Before()
+	{
+		window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_Demo_XunDian?id="+ '{!vpId}'+"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}');
+	}
+	function viewBaiFangs(bfid)
+	{
+		window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_Demo_BaiFang?id=" + bfid +"&vpid"+'{!vpId}' +"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}' );
+	}
+	function addBaiFang(){
+		window.location.replace("https://celnet-wechat-developer-edition.ap1.force.com/apex/WEQY_Demo_ModifyBaiFang?vpid="+'{!vpId}'+"&qyUserId="+'{!qyUserId}'+"&visitName="+'{!visitName}');
+	}
+	
+	function modify()
+	{
+		if($('#modify').html()=='编辑')
+		{
+			editnote();
+		} 
+		else if($('#modify').html()=='保存') 
+		{
+			savenote();
+		}
+	}
+	
+	function editnote()
+	{
+		var note = $('#spannote').html();
+		$('#modify').html('保存');
+		$('#spannote').replaceWith('<textarea name="textarea" class="ui-input-text ui-shadow-inset ui-body-inherit ui-corner-all ui-textinput-autogrow" id="textarea">'+note+'</textarea>');
+	}
+	
+	function savenote()
+	{
+		visitdata.vpc = {};
+		visitdata.vpc.Id = vid;
+		visitdata.vId = vid;
+		visitdata.vpc.Note__c = $('#textarea').val();
+						
+		WEQY_XunDianDetailController.saveNote(visitdata, function(result,event){
+			if(event.status){
+				$('#modify').html('编辑');
+				
+				var readnote = '<span id="spannote" >';
+				readnote += result;
+				readnote += '</span>';
+				
+				$('#textarea').replaceWith(readnote);
+			} else {
+				alert(event.message);
+				alert('Visualforce Remoting Failed.');
+			}
+		});
+	}
+</script>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7f38yijzEIGcc4BjWdABfllrTeXxfhGs">
+ </script>
+
+<script>
+function getLocation()
+{
+  if(navigator.geolocation)
+  {
+  	navigator.geolocation.getCurrentPosition(showPosition,showError);
+  } 
+  else
+  {
+  	document.getElementById('mapholder').innerHTML="Geolocation is not supported by this browser.";
+  }
+}
+
+function showPosition(position)
+{
+  lat=position.coords.latitude;
+  lon=position.coords.longitude;
+  latlon=new google.maps.LatLng(lat, lon);
+  
+  var account_latlon = new google.maps.LatLng(account_lat, account_lng);
+  
+  mapholder=document.getElementById('mapholder');
+  mapholder.style.height='250px';
+  mapholder.style.width='100%';
+
+  var myOptions={
+	  center:account_latlon,zoom:14,
+	  mapTypeId:google.maps.MapTypeId.ROADMAP,
+	  mapTypeControl:false,
+	  navigationControlOptions:{style:google.maps.NavigationControlStyle.SMALL}
+  };
+  var map=new google.maps.Map(document.getElementById("mapholder"),myOptions);
+  var marker=new google.maps.Marker({position:latlon,map:map,title:"You are here!"});
+  var marker = new google.maps.Marker({position:account_latlon,map:map,title:"Store Location"});
+}
+
+function showError(error)
+  {
+  switch(error.code) 
+    {
+    case error.PERMISSION_DENIED:
+      document.getElementById('mapholder').innerHTML="User denied the request for Geolocation."
+      break;
+    case error.POSITION_UNAVAILABLE:
+      document.getElementById('mapholder').innerHTML="Location information is unavailable."
+      break;
+    case error.TIMEOUT:
+      document.getElementById('mapholder').innerHTML="The request to get user location timed out."
+      break;
+    case error.UNKNOWN_ERROR:
+      document.getElementById('mapholder').innerHTML="An unknown error occurred."
+      break;
+    }
+  }
+</script>
+<body onload="getLocation()">
+<apex:form >
+	<div data-role="page" id="pageone">
+	  <div data-role="header" style="background:#3388CC;color:#FFF;margin-top:-1px;">
+	    <h1>{!vp.Name}</h1>
+	  </div>
+
+	  <div data-role="content">
+		    
+		    <ul data-role="listview" data-inset="true">
+		      <li>拜访时间：<apex:outputText value="{0,date,yyyy-MM-dd}">
+                   			<apex:param value="{!vp.VisitDate__c}"/>
+                   </apex:outputText>
+      		 </li>
+      		 <li>门店地址：{!vp.Store__r.Address__c}</li>
+      		 <li>
+      		 	<label for="textarea">备注:</label>
+      		 	<span id="spannote">{!vp.Note__c}</span>
+			</li>
+		    </ul>
+		    
+			    <div style="text-align:center;">
+			    <a href="javascript:modify();" data-role="button" data-inline="true" id="modify">编辑</a>
+			    
+			    <!-- 
+			    <a href="javascript:viewBaiFangs('{!vp.Id}');" data-role="button" data-inline="true">查看</a>
+			    <a href="javascript:addBaiFang();" data-role="button" data-inline="true">添加</a> 
+			    -->
+			    
+	  			<a href="javascript:Before();" data-role="button" data-inline="true">返回</a>
+		  	  </div>
+		  </div>
+		  	 <div id="mapholder"></div>
+  	  </div>
+  </apex:form>
+</body>
+</html>
+</apex:page>
