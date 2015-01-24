@@ -1,0 +1,166 @@
+<html><head>
+    <title>Taobao Order Map Dashboard</title>
+    <script src="https://wechatqy-developer-edition.ap1.force.com/resource/1421921434000/FusionchartsChinaMap/fusioncharts/fusioncharts.js" type="text/javascript"></script>
+    <script src="https://wechatqy-developer-edition.ap1.force.com/resource/1421921434000/FusionchartsChinaMap/fusioncharts/themes/fusioncharts.theme.fint.js" type="text/javascript"></script>
+<meta charset="utf-8"></head>
+<body>
+    <div id="chart-container">Taobao Order Map Dashboard is Loading...</div>
+
+<script>
+
+FusionCharts.ready(function() {
+    var query_entity = 'new_Map_Log_Data__c' + 'Set'; 
+    var query_filter = "?$filter=new_Channel__c eq 'Taobao'";
+    var query_string = query_entity + query_filter;
+    var queryOrdersReq = new XMLHttpRequest();
+    queryOrdersReq.open("GET", window.parent.Xrm.Page.context.getClientUrl() + "/XRMServices/2011/OrganizationData.svc/" + query_string, true);
+    queryOrdersReq.setRequestHeader("Accept", "application/json");
+    queryOrdersReq.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+    queryOrdersReq.onreadystatechange = function () {
+        queryOrdersReqCallBack(this);
+    };
+    queryOrdersReq.send();
+
+    function queryOrdersReqCallBack(queryOrdersReq) {
+        if (queryOrdersReq.readyState == 4 /* complete */) {
+            queryOrdersReq.onreadystatechange = null; //avoids memory leaks
+            if (queryOrdersReq.status == 200) {
+                //Success
+                var record_array = [];
+                try{
+                    record_array = JSON.parse(queryOrdersReq.responseText).d.results;
+
+                } catch(e){
+                    console.log(e);
+                }
+
+                var province_match = prepareMatchData();
+                var datawrapper_array = wrapDataArray(record_array, province_match);
+                renderMap(datawrapper_array, province_match);
+            } else {
+                //Failure
+                console.log(queryOrdersReq.status + " " + queryOrdersReq.responseType + ": " + queryOrdersReq.response);
+            }
+        }
+       
+    };
+
+    function prepareMatchData(){
+        var province_match = {};
+        
+        var province_fusioncharts_array = ["HK","MA","TA","TJ","SH","NM","JX","HN","GX","GZ","YN","CQ","HU","AH","HE","SC","XZ","NX","GD","HA","FJ","ZJ","JS","SD","HB","LN","JL","BJ","SX","SA","GS","QH","HL","XJ"];
+
+        var province_crm_array = ["香港特别行政区","澳门特别行政区","台湾","天津","上海","内蒙古自治区","江西","湖南","广西壮族自治区","贵州","云南","重庆","湖北","安徽","河南","四川","西藏自治区","宁夏回族自治区","广东","海南","福建","浙江","江苏","山东","河北","辽宁","吉林","北京","山西","陕西","甘肃","青海","黑龙江","新疆维吾尔自治区"];
+
+        province_match.fusioncharts_array = province_fusioncharts_array;
+        province_match.crm_array = province_crm_array;
+
+        return province_match;
+    }
+
+    function wrapDataArray(record_array, province_match){
+        var datawrapper_array = [];
+
+        var province_fusioncharts_array = province_match.fusioncharts_array;
+        var province_crm_array = province_match.crm_array;
+
+        for (var i = record_array.length - 1; i >= 0; i--) {
+            var datawrapper = {};
+
+            for (var j = province_crm_array.length - 1; j >= 0; j--) {
+                if(record_array[i].new_Province__c === province_crm_array[j]){
+                    datawrapper.province = province_fusioncharts_array[j];
+                    datawrapper.amount = record_array[i].new_Order_Total_Price__c.Value;
+                    datawrapper_array.push(datawrapper);
+                }
+            };
+        };
+
+        return datawrapper_array;
+    }
+
+    function renderMap(datawrapper_array, province_match){
+        var default_value = 1;
+
+        var fusioncharts_values = {};
+
+        for (var i = province_match.fusioncharts_array.length - 1; i >= 0; i--) {
+            fusioncharts_values[province_match.fusioncharts_array[i] + "_value"] = default_value;
+        };
+
+        var total_value = 0;
+        var max_value = 0;
+        var average_value = 0;
+        var min_value = 0;
+
+        for (var i = datawrapper_array.length - 1; i >= 0; i--) {
+            var current_value = Math.round(datawrapper_array[i].amount);
+            fusioncharts_values[datawrapper_array[i].province + "_value"] = current_value;
+
+            total_value += current_value;
+            max_value = max_value < current_value?current_value:max_value;
+            min_value = min_value > current_value?current_value:min_value;
+        };
+        
+        average_value = Math.round(total_value / 31);
+
+        var data_array = [];
+
+        for (var i = province_match.fusioncharts_array.length - 1; i >= 0; i--) {
+            var fusioncharts_data = {};
+            fusioncharts_data.value = fusioncharts_values[province_match.fusioncharts_array[i] + "_value"];
+            fusioncharts_data.id = "CN." + province_match.fusioncharts_array[i];
+            data_array.push(fusioncharts_data);
+        };
+
+        var populationMap = new FusionCharts({
+            type: 'maps/china2',
+            renderAt: 'chart-container',
+            width: '400',
+            height: '400',
+            dataFormat: 'json',
+            dataSource: {
+                "map": {
+                "hovercolor": "CCCCCC",
+                "fillalpha": "80",
+                "connectorcolor": "000000",
+                "caption": "Taobao Order Map Dashboard",
+                "legendshadow": "0",
+                "legendallowdrag": "0",
+                "legendbordercolor": "ffffff",
+                "legendborderalpha": "0",
+                "legendposition": "BOTTOM",
+                "showshadow": "0",
+                "showlegend": "1",
+                "bordercolor": "FFFFFF",
+                "canvasbordercolor": "FFFFFF",
+                "usehovercolor": "1",
+                "showbevel": "0",
+                "animation": "0",
+                "showborder": 0
+            },
+            "colorrange": {
+                "gradient": "1",
+                "code": "e44a00",
+                "endlabel": "High",
+                "startlabel": "Low",
+                "minvalue": "0",
+                "color": [
+                     {
+                        "code": "f8bd19",
+                        "maxvalue": 1
+                    },
+                    {
+                        "code": "ff2121",
+                        "maxvalue": max_value
+                    }
+                ]
+            },
+            "data": data_array
+            }
+        }).render();
+
+    }
+});
+</script>
+</body></html>
