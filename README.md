@@ -1,4 +1,4 @@
-Celnet-Projects
+Celnet projects
 ==================
 
-Store codes I wrote or modified with comments.
+Code snippets in Celnet projects
