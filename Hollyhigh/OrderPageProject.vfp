@@ -1,0 +1,78 @@
+<apex:page standardController="Opportunity" showHeader="true" extensions="OrderPageProjectControler" >
+<apex:form id="form"> 
+<apex:pageBlock title="{!Opp.Name}">
+	
+	<apex:outputPanel id="ProjectPanel">
+	
+		<apex:outputLabel value="客户类型" for="AccountType" />
+		<apex:inputField id="AccountType" value="{!acc.RecordTypeId}" /> 
+		
+		<apex:outputLabel value="行业" for="IndustryType" />
+		<apex:inputField id="IndustryType" value="{!acc.IndustryType__c}" />
+		
+		<apex:outputLabel value="子行业" for="industry" />
+		<apex:inputField id="industry" value="{!acc.industry}" />
+		
+		<apex:commandButton value="搜索" action="{!Search}"/>
+	</apex:outputPanel> 
+	
+	<apex:pageBlockTable value="{!accountList}" var="acc">
+	<!-- 
+				<apex:column headerValue="是否选中">
+            		<apex:inputCheckbox value="{}"/>
+        		</apex:column>
+        		 -->
+
+				<apex:column headerValue="客户">
+					<apex:outputText value="{!acc.Name}"></apex:outputText>
+				</apex:column>
+	</apex:pageBlockTable>
+	
+	<apex:pageBlockButtons location="bottom">
+    	<apex:commandButton value="确认" action="{!Sure}"/> 
+    	<apex:commandButton value="取消" action="{!Cancel}"/>
+    </apex:pageBlockButtons>
+	
+</apex:pageBlock>
+
+</apex:form>
+</apex:page>
+/*
+*Author:crazy at 2014-1-6
+*Function1: 
+*/
+public with sharing class OrderPageProjectControler {
+
+	private ID oppId;
+	public Opportunity Opp {get; set;}
+	public Account acc{get;set;}
+	public List<Account> accountList {get; set;}
+
+	public OrderPageProjectControler(ApexPages.standardController controller)
+    {
+      	this.oppId = ApexPages.currentPage().getParameters().get('id');
+     	this.Opp = [Select ID, Name,Type, AccountId, Account.Name, Account.ID, Account.Type, Account.IndustryType__c, Account.industry, account.RecordTypeId From Opportunity Where Id =: this.oppId];
+     	if(this.Opp.Account == null)
+     	{
+     		this.Opp.Account = new Account();
+     	}
+     	this.acc = Opp.Account;
+    }
+	
+	public PageReference Search()
+	{
+		this.accountList = [select Account.Name from Account where Account.RecordTypeId=:this.acc.RecordTypeId and IndustryType__c=: this.acc.IndustryType__c and industry=: this.acc.industry];
+		return null;
+	}
+	public void Sure()
+	{
+		
+	}
+	public PageReference Cancel()
+	{
+		PageReference redirectPag = new PageReference('https://ap1.salesforce.com/' + this.oppId);
+        redirectPag.setRedirect(true);
+        return redirectPag; 
+	}
+	
+}
