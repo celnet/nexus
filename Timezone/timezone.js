@@ -1,4 +1,4 @@
-var TimezoneDatabase = (function(){
+window.TimezoneDatabase = (function(){
         var _tzdb = ['Africa/Abidjan,+00:00,+00:00',
             'Africa/Accra,+00:00,+00:00',
             'Africa/Addis_Ababa,+03:00,+03:00',
